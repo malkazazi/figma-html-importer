@@ -47,4 +47,9 @@ Then just refresh both apps:
 Keep this folder where it is — Chrome and Figma load from this exact
 location, so updating in place is what makes the refresh work.
 
+Want to know when a new version is out? On the GitHub page
+(https://github.com/malkazazi/figma-html-importer) click "Watch" →
+"Custom" → check "Releases" → Apply. GitHub will email you each time a
+new version ships, so you know when to run the updater.
+
 Full details and limitations are in README.md.
