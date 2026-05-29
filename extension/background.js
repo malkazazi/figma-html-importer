@@ -29,6 +29,15 @@ const OFFSCREEN_PATH = 'offscreen.html';
 
 let inFlight = false;
 
+// Set by a `cancel-capture` message; runFullCapture checks it between steps and
+// bails out cleanly (detaches, clears emulation) if the user hit Cancel.
+let cancelRequested = false;
+
+// Result of the most recent Current-Page capture, held in memory so the popup's
+// result screen can deliver it (copy/download) on demand AFTER capture, in the
+// chosen format. Overwritten by the next capture.
+let heldCapture = null; // { envelope, breakpoints, theme, tabId, host }
+
 // Pending picker session: when start-pick injects picker.js, it stashes the
 // resolve fn here so the pick-result / pick-cancel message can complete the
 // promise. Only one picker may be active at a time.
@@ -36,16 +45,36 @@ let pickerResolver = null;
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg?.type === 'start-capture') {
+    cancelRequested = false;
+    // Captures and holds the result; delivery happens separately via
+    // 'deliver-capture' once the user picks a format on the result screen.
     runFullCapture(msg)
-      .then((result) => {
-        showToast(msg.tabId, 'success', formatSuccessMessage(result, msg.output));
-        sendResponse({ ok: true, ...result });
-      })
+      .then((result) => sendResponse(result))
       .catch((err) => {
         const m = humanizeError(err);
         showToast(msg.tabId, 'error', `Capture failed: ${m}`);
         sendResponse({ ok: false, error: m });
       });
+    return true;
+  }
+  if (msg?.type === 'cancel-capture') {
+    cancelRequested = true;
+    sendResponse({ ok: true });
+    return false;
+  }
+  if (msg?.type === 'deliver-capture') {
+    if (!heldCapture) {
+      sendResponse({ ok: false, error: 'Nothing to deliver — capture again.' });
+      return false;
+    }
+    const { envelope, breakpoints, theme, tabId } = heldCapture;
+    deliver(envelope, breakpoints, theme, msg.output, /* isPick */ false, msg.format)
+      .then(({ filename, bytes }) => {
+        const count = (envelope.captures || []).length;
+        showToast(tabId, 'success', formatSuccessMessage({ count, filename, bytes }, msg.output));
+        sendResponse({ ok: true, filename, bytes });
+      })
+      .catch((err) => sendResponse({ ok: false, error: humanizeError(err) }));
     return true;
   }
   if (msg?.type === 'start-pick') {
@@ -80,7 +109,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 
 // ---------- multi-breakpoint capture ----------
 
-async function runFullCapture({ tabId, breakpoints, theme, settleMs, output, format }) {
+async function runFullCapture({ tabId, breakpoints, theme, settleMs }) {
   if (inFlight) throw new Error('A capture is already running');
   inFlight = true;
   startBadgeBusy(tabId);
@@ -95,13 +124,16 @@ async function runFullCapture({ tabId, breakpoints, theme, settleMs, output, for
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     const pageUrl = tab?.url || '';
     const pageTitle = tab?.title || '';
+    let host = pageUrl;
+    try { host = new URL(pageUrl).hostname.replace(/^www\./, ''); } catch {}
 
     const captures = [];
     for (let i = 0; i < breakpoints.length; i++) {
+      if (cancelRequested) return { ok: false, cancelled: true };
       const bp = breakpoints[i];
-      const tag = `${bp.label || bp.width + 'px'} (${i + 1}/${breakpoints.length})`;
 
-      progress(`Resizing → ${tag}`);
+      // Structured progress so the popup can render "Importing <host> <width>w".
+      progress('Importing', { host, width: bp.width, index: i + 1, total: breakpoints.length });
       await chrome.debugger.sendCommand(target, 'Emulation.setDeviceMetricsOverride', {
         width: bp.width,
         height: bp.height,
@@ -114,7 +146,6 @@ async function runFullCapture({ tabId, breakpoints, theme, settleMs, output, for
         });
       }
 
-      progress(`Letting page settle → ${tag}`);
       await sleep(Math.max(0, settleMs || 0));
 
       // Pre-serialization scroll pass: many pages lazy-load content (images,
@@ -124,13 +155,12 @@ async function runFullCapture({ tabId, breakpoints, theme, settleMs, output, for
       // sections to mount AND parks sticky elements at their resting
       // (top-of-page) offsets so getBoundingClientRect captures the right
       // geometry. This is what html.to.design and similar tools do.
-      progress(`Triggering lazy content → ${tag}`);
       await autoScrollAndReset(tabId);
       // Belt-and-suspenders settle on top of the function's own internal
       // wait. Cheap; eliminates a class of flaky-first-capture bugs.
       await sleep(400);
+      if (cancelRequested) return { ok: false, cancelled: true };
 
-      progress(`Serializing → ${tag}`);
       const html = await serialize(tabId, null);
       captures.push({
         label: bp.label,
@@ -148,10 +178,11 @@ async function runFullCapture({ tabId, breakpoints, theme, settleMs, output, for
     }
 
     const envelope = buildEnvelope(pageUrl, pageTitle, captures);
-    progress(output === 'clipboard' ? 'Copying to clipboard…' : 'Writing file…');
-    const { filename, bytes } = await deliver(envelope, breakpoints, theme, output, /* isPick */ false, format);
+    // Hold the result in memory; the popup's result screen delivers it
+    // (copy/download) in the chosen format via a 'deliver-capture' message.
+    heldCapture = { envelope, breakpoints, theme, tabId, host };
 
-    return { count: captures.length, filename, bytes };
+    return { ok: true, count: captures.length, host, url: pageUrl };
   } finally {
     if (attached) {
       try { await chrome.debugger.detach(target); } catch {}
@@ -457,8 +488,8 @@ async function fetchAsText(url) {
 
 // ---------- small utils ----------
 
-function progress(text) {
-  chrome.runtime.sendMessage({ type: 'capture-progress', text }).catch(() => {});
+function progress(text, extra) {
+  chrome.runtime.sendMessage({ type: 'capture-progress', text, ...(extra || {}) }).catch(() => {});
 }
 
 // Injects a transient toast into the target tab so the user gets feedback

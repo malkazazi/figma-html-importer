@@ -24,39 +24,38 @@ click the refresh icon on the extension card.
 
 ## Use
 
-The popup is a two-step wizard:
-- **Step 1 — Breakpoints:** choose **Entire page** or **Select an element**, and
-  edit the breakpoint list.
-- **Step 2 — Options:** theme, **Output** (Copy to clipboard — recommended — or
-  Download file), and **Format** (`.fhtml` bundle — recommended — or raw `.html`).
+The popup opens on a **setup** screen: pick your **Viewports** (the breakpoint
+list) on the left and a **Theme** on the right, then choose one of two actions —
+**Capture Current Page** or **Capture Selection**.
 
-### Whole-page multi-breakpoint capture
+### Capture Current Page (whole-page, multi-breakpoint)
 
 1. Open the page you want to capture (logged-in pages work — the extension uses
    the active tab's session).
-2. Click the extension icon. Leave **Entire page** selected and adjust the
-   breakpoint list if needed, then click **Next →**.
-3. On step 2, pick your theme / output / format and click **Capture**. Chrome
-   shows a yellow "is being debugged" banner at the top of the tab while it
-   runs; this is normal and goes away when finished.
-4. In Figma: drop the `.fhtml` into the plugin window, **or** paste the
-   clipboard contents into the textarea. Either way, the plugin auto-detects
-   the bundle and switches to multi-breakpoint import.
+2. Click the extension icon, set your viewports / theme, and click **Capture
+   Current Page**. Chrome shows a yellow "is being debugged" banner while it
+   runs; this is normal.
+3. A progress ring shows "Importing <site> <width>w" as it works. You can
+   **Cancel** at any point to abort and return to setup.
+4. When it finishes, the **result** screen appears: choose a **format**
+   (`.fhtml` bundle — recommended — or raw `.html`) and then **Copy to
+   clipboard** or **Download file**. You can do both.
+5. In Figma: drop the `.fhtml` into the plugin window, **or** paste the
+   clipboard contents into the textarea. The plugin auto-detects the bundle.
 
-### Pick a single element
+### Capture Selection (one element)
 
-When you only want one component (e.g. a button, a card, a navbar) instead of
-the whole page:
+When you only want one component (e.g. a button, a card, a navbar):
 
-1. On step 1, choose **Select an element**. The breakpoint list greys out —
-   this mode captures only the current viewport. Click **Next →**.
-2. Set your options on step 2, then click **Pick element…**.
+1. On the setup screen, click **Capture Selection**.
+2. On the next screen choose your **format** and **output** (clipboard or
+   download), then click **Pick element →**.
 3. The popup closes and a hover overlay appears on the page. Move the mouse to
    highlight the element you want. **A single click captures it** instantly, or
    press **Esc** to cancel.
 4. While capturing, a spinner shows at the bottom of the page and the toolbar
    icon shows an animated badge; the usual success/error toast confirms when
-   it's done.
+   it's done. (The popup's progress ring is only for Capture Current Page.)
 4. The extension serializes only that element's subtree (with full inlined
    CSS / fonts) and delivers it via the same Output mode (download or
    clipboard). A desktop notification confirms success.

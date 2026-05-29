@@ -10,168 +10,153 @@
     padding: 14px;
     font: 13px/1.4 -apple-system, system-ui, sans-serif;
     color: #111;
-    width: 360px;
+    width: 380px;
     background: #fff;
   }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .brand img {
-    width: 24px;
-    height: 24px;
-    border-radius: 5px;
-    flex: 0 0 auto;
-  }
+  .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .brand img { width: 24px; height: 24px; border-radius: 5px; flex: 0 0 auto; }
   h1 { font-size: 13px; font-weight: 600; margin: 0; }
 
-  /* Step indicator */
-  .steps {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    color: #bbb;
+  /* ---- setup: two cards side by side ---- */
+  .cols { display: flex; gap: 10px; align-items: stretch; }
+  .card {
+    flex: 1 1 0;
+    min-width: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px;
   }
-  .steps .step { display: flex; align-items: center; gap: 6px; }
-  .steps .num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 17px; height: 17px;
-    border-radius: 50%;
-    background: #e5e7eb;
-    color: #888;
-    font-size: 10px;
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 10px;
   }
-  .steps .step.active { color: #111; }
-  .steps .step.active .num { background: #18a0fb; color: #fff; }
-  .steps .step.done .num { background: #cfe9fb; color: #0d6fb8; }
-  .steps .sep { flex: 0 0 18px; height: 1px; background: #e5e7eb; }
 
-  label {
-    font-size: 10px;
-    color: #555;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-  }
-  .bp-section { margin-bottom: 12px; }
-  .bp-section > label { display: block; margin-bottom: 6px; }
   .bp-grid {
     display: grid;
-    grid-template-columns: auto 1fr auto auto auto;
-    gap: 5px 8px;
+    grid-template-columns: auto auto 1fr auto auto auto;
+    gap: 7px 6px;
     align-items: center;
   }
   .bp-grid input[type=text] {
-    font: 11px/1.3 system-ui;
-    width: 100%;
-    padding: 4px 6px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    outline: none;
+    font: 11px/1.3 system-ui; width: 100%; padding: 4px 6px;
+    border: 1px solid #ddd; border-radius: 5px; outline: none;
   }
   .bp-grid input[type=number] {
-    width: 60px;
-    padding: 4px 6px;
-    font-size: 11px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    outline: none;
+    width: 52px; padding: 4px 5px; font-size: 11px;
+    border: 1px solid #ddd; border-radius: 5px; outline: none;
   }
   .bp-grid input:focus { border-color: #18a0fb; }
-  .bp-grid .x { color: #888; font-size: 11px; text-align: center; }
+  .bp-grid .x { color: #999; font-size: 11px; text-align: center; }
   .bp-grid input[type=checkbox] { margin: 0; accent-color: #18a0fb; }
+  .dev { display: inline-flex; color: #555; }
+  .dev svg { display: block; }
 
-  .row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-  .row > label:first-child { min-width: 70px; }
-  .field { margin-bottom: 12px; }
-  .field > label { display: block; margin-bottom: 6px; }
-  .options { display: flex; flex-direction: column; gap: 7px; }
-  select {
-    font: 12px system-ui;
-    padding: 4px 8px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background: #fff;
-    outline: none;
+  .theme-list { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    display: flex; align-items: center; gap: 8px;
+    font: 13px/1 -apple-system, system-ui, sans-serif; color: #222; cursor: pointer;
   }
-  select:focus { border-color: #18a0fb; }
+  .opt input { accent-color: #18a0fb; margin: 0; }
+  .opt .dev { color: #555; }
 
-  label.radio, label.checkbox {
-    font: 12px/1 -apple-system, system-ui, sans-serif;
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
-    color: #222;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-    cursor: pointer;
+  /* ---- big capture buttons ---- */
+  .capture-btns { display: flex; gap: 12px; margin-top: 14px; }
+  button.big {
+    flex: 1 1 0; width: auto;
+    display: flex; align-items: center; gap: 10px;
+    text-align: left; padding: 14px 14px;
+    font: 600 14px/1.2 -apple-system, system-ui, sans-serif;
+    color: #fff; border: 0; border-radius: 12px; cursor: pointer;
   }
-  label.radio input, label.checkbox input { accent-color: #18a0fb; margin: 0; }
+  button.big svg { flex: 0 0 auto; }
+  button.big.blue { background: #18a0fb; box-shadow: 0 4px 0 #0d6fb8; }
+  button.big.blue:hover { background: #2aa8fc; }
+  button.big.yellow { background: #f5c518; color: #1a1300; box-shadow: 0 4px 0 #c79a00; }
+  button.big.yellow:hover { background: #f8cf3a; }
+  button.big:active { transform: translateY(2px); box-shadow: none; }
+
+  /* ---- shared small buttons / rows ---- */
+  button.sm {
+    width: auto; font: 600 12px/1 system-ui; padding: 9px 16px;
+    border: 0; border-radius: 8px; background: #eef0f2; color: #222; cursor: pointer;
+  }
+  button.sm:hover { background: #e4e7ea; }
+  button.sm.blue { background: #18a0fb; color: #fff; }
+  button.sm.blue:hover { background: #2aa8fc; }
+  button.sm.yellow { background: #f5c518; color: #1a1300; }
+  button.sm.yellow:hover { background: #f8cf3a; }
+  button.secondary {
+    width: auto; font: 600 12px/1 system-ui; padding: 9px 16px;
+    border: 0; border-radius: 8px; background: #f1f2f4; color: #333; cursor: pointer;
+  }
+  button.secondary:hover { background: #e6e7ea; }
+  .btn-row { display: flex; gap: 8px; margin-top: 14px; }
+  .btn-row.center { justify-content: center; }
+  .btn-row .grow { flex: 1 1 auto; }
+
+  label.radio {
+    font: 13px/1 -apple-system, system-ui, sans-serif; color: #222;
+    display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  }
+  label.radio input { accent-color: #18a0fb; margin: 0; }
+  .field { margin-bottom: 14px; }
+  .field > .lbl {
+    display: block; font-size: 10px; color: #555; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px;
+  }
+  .options { display: flex; flex-direction: column; gap: 9px; }
   .rec { color: #067647; font-weight: 600; }
 
-  .pick-hint {
-    font-size: 10.5px;
-    color: #6b7280;
-    background: #f6f7f9;
-    border-left: 3px solid #18a0fb;
-    padding: 6px 8px;
-    margin-bottom: 12px;
-    line-height: 1.45;
+  /* ---- loading screen ---- */
+  #panel-loading { text-align: center; padding: 8px 0 4px; }
+  .ring {
+    width: 116px; height: 116px; margin: 16px auto 4px;
+    border-radius: 50%;
+    border: 10px solid #e5e7eb;
+    border-top-color: #16a34a;
+    border-right-color: #16a34a;
+    animation: fhi-spin 0.9s linear infinite;
   }
-  .bp-section.disabled { opacity: .45; pointer-events: none; }
+  @keyframes fhi-spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; color: #333; margin: 14px 0 2px; min-height: 18px; }
 
-  button {
-    font: 600 12px/1 system-ui;
-    padding: 9px 14px;
-    border: 0;
-    border-radius: 6px;
-    background: #18a0fb;
-    color: #fff;
-    cursor: pointer;
-    width: 100%;
+  /* ---- result screen ---- */
+  #panel-result { text-align: center; }
+  .check {
+    width: 58px; height: 58px; margin: 6px auto 10px;
+    border-radius: 50%; border: 4px solid #16a34a;
+    display: flex; align-items: center; justify-content: center;
   }
-  button:hover { background: #0d8fe0; }
-  button:disabled { background: #aaa; cursor: default; }
-  button.secondary { background: #f1f2f4; color: #333; }
-  button.secondary:hover { background: #e6e7ea; }
-  .btn-row { display: flex; gap: 8px; }
-  .btn-row button.secondary { width: 38%; }
+  .check svg { display: block; }
+  .result-url {
+    font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: #444; word-break: break-all; padding: 0 4px 12px;
+    border-bottom: 1px solid #eee; margin-bottom: 12px;
+  }
+  .deliver-rows { text-align: left; }
+  .drow {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 0; border-top: 1px solid #eee;
+  }
+  .drow:first-child { border-top: 0; }
+  .dinfo { flex: 1 1 auto; min-width: 0; }
+  .dinfo b { display: block; font-size: 13px; font-weight: 600; }
+  .dinfo span { display: block; font-size: 11px; color: #777; margin-top: 2px; }
 
   .status {
-    font-size: 11px;
-    color: #555;
-    margin-top: 10px;
-    min-height: 16px;
-    white-space: pre-line;
+    font-size: 11px; color: #555; margin-top: 12px; min-height: 16px;
+    white-space: pre-line; text-align: center;
   }
   .status.error { color: #b42318; }
   .status.success { color: #067647; }
 
   .footer {
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid #eee;
-    font-size: 10.5px;
-    color: #999;
-    line-height: 1.5;
+    margin-top: 14px; padding-top: 10px; border-top: 1px solid #eee;
+    font-size: 10.5px; color: #999; line-height: 1.5;
   }
-  .footer code {
-    background: #f4f4f5;
-    padding: 1px 4px;
-    border-radius: 3px;
-    font-size: 10px;
-  }
+  .footer code { background: #f4f4f5; padding: 1px 4px; border-radius: 3px; font-size: 10px; }
 </style>
 </head>
 <body>
@@ -180,65 +165,91 @@
     <h1>Capture for Figma</h1>
   </div>
 
-  <div class="steps">
-    <span class="step active" id="step-ind-1"><span class="num">1</span> Breakpoints</span>
-    <span class="sep"></span>
-    <span class="step" id="step-ind-2"><span class="num">2</span> Options</span>
-  </div>
-
-  <!-- ───────────── STEP 1: what to capture ───────────── -->
-  <section class="panel" id="panel-1">
-    <div class="field">
-      <label>What to capture</label>
-      <div class="options">
-        <label class="radio"><input type="radio" name="mode" value="full" checked> Entire page</label>
-        <label class="radio"><input type="radio" name="mode" value="pick"> Select an element</label>
+  <!-- ───────────── SETUP ───────────── -->
+  <section id="panel-setup">
+    <div class="cols">
+      <div class="card">
+        <div class="card-title">Viewports</div>
+        <div class="bp-grid" id="bp-grid"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Themes</div>
+        <div class="theme-list" id="theme-list">
+          <label class="opt"><input type="radio" name="theme" value="" checked><span class="dev" data-icon="monitor"></span> Browser theme</label>
+          <label class="opt"><input type="radio" name="theme" value="light"><span class="dev" data-icon="sun"></span> Light</label>
+          <label class="opt"><input type="radio" name="theme" value="dark"><span class="dev" data-icon="moon"></span> Dark</label>
+        </div>
       </div>
     </div>
 
-    <div class="bp-section">
-      <label>Breakpoints</label>
-      <div class="bp-grid" id="bp-grid"></div>
+    <div class="capture-btns">
+      <button id="cap-full" class="big blue"><span class="dev" data-icon="cam"></span> Capture Current Page</button>
+      <button id="cap-pick" class="big yellow"><span class="dev" data-icon="cam-sel"></span> Capture Selection</button>
     </div>
-
-    <div id="pick-hint" class="pick-hint" style="display:none;">
-      You'll click an element on the page to capture it. Breakpoints are
-      ignored — only the current viewport is captured.
-    </div>
-
-    <button id="next">Next →</button>
   </section>
 
-  <!-- ───────────── STEP 2: output options ───────────── -->
-  <section class="panel" id="panel-2" style="display:none;">
-    <div class="row">
-      <label>Theme</label>
-      <select id="theme">
-        <option value="">(page default)</option>
-        <option value="light">light</option>
-        <option value="dark">dark</option>
-      </select>
+  <!-- ───────────── LOADING (Current Page) ───────────── -->
+  <section id="panel-loading" hidden>
+    <div class="ring"></div>
+    <div class="loading-text" id="loading-text">Capturing…</div>
+    <div class="btn-row center">
+      <button id="cancel" class="secondary">Cancel</button>
     </div>
+  </section>
+
+  <!-- ───────────── RESULT (Current Page) ───────────── -->
+  <section id="panel-result" hidden>
+    <div class="check">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="result-url" id="result-url"></div>
 
     <div class="field">
-      <label>Output</label>
+      <span class="lbl">Format</span>
       <div class="options">
-        <label class="radio"><input type="radio" name="output" value="clipboard" checked> Copy to clipboard <span class="rec">(recommended)</span></label>
-        <label class="radio"><input type="radio" name="output" value="download"> Download file</label>
+        <label class="radio"><input type="radio" name="format-r" value="fhtml" checked> .fhtml (bundle) <span class="rec">(recommended)</span></label>
+        <label class="radio"><input type="radio" name="format-r" value="html"> .html (raw)</label>
       </div>
     </div>
 
-    <div class="field">
-      <label>Format</label>
-      <div class="options">
-        <label class="radio"><input type="radio" name="format" value="fhtml" checked> .fhtml (bundle) <span class="rec">(recommended)</span></label>
-        <label class="radio"><input type="radio" name="format" value="html"> .html (raw)</label>
+    <div class="deliver-rows">
+      <div class="drow">
+        <div class="dinfo"><b>Copy to clipboard</b><span>Paste into the Figma plugin's textarea.</span></div>
+        <button id="do-copy" class="sm blue">Copy</button>
+      </div>
+      <div class="drow">
+        <div class="dinfo"><b>Download file</b><span>Drop the file into the Figma plugin window.</span></div>
+        <button id="do-download" class="sm">Download</button>
       </div>
     </div>
 
     <div class="btn-row">
-      <button id="back" class="secondary">← Back</button>
-      <button id="capture">Capture</button>
+      <button id="result-back" class="secondary grow">← New capture</button>
+    </div>
+  </section>
+
+  <!-- ───────────── DELIVERY (Selection — choose before picking) ───────────── -->
+  <section id="panel-deliver-pick" hidden>
+    <div class="field">
+      <span class="lbl">Format</span>
+      <div class="options">
+        <label class="radio"><input type="radio" name="format-p" value="fhtml" checked> .fhtml (bundle) <span class="rec">(recommended)</span></label>
+        <label class="radio"><input type="radio" name="format-p" value="html"> .html (raw)</label>
+      </div>
+    </div>
+    <div class="field">
+      <span class="lbl">Output</span>
+      <div class="options">
+        <label class="radio"><input type="radio" name="output-p" value="clipboard" checked> Copy to clipboard <span class="rec">(recommended)</span></label>
+        <label class="radio"><input type="radio" name="output-p" value="download"> Download file</label>
+      </div>
+    </div>
+    <div class="status" id="pick-note" style="text-align:left;color:#6b7280;">
+      Click <b>Pick element</b>, then click the element you want on the page.
+    </div>
+    <div class="btn-row">
+      <button id="pick-back" class="secondary">← Back</button>
+      <button id="pick-go" class="sm yellow grow">Pick element →</button>
     </div>
   </section>
 
