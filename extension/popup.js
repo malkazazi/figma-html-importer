@@ -146,6 +146,38 @@ function initSeg(seg, onChange) {
 function getFormatR() { return segValue($segR); }
 function getFormatP() { return segValue($segP); }
 function setFormat(v) { segSet($segR, v); segSet($segP, v); }
+
+// Number of breakpoints in the most recent Current-Page capture, used to warn
+// how many separate .html files the raw format would produce.
+let lastCaptureCount = 0;
+
+const FHTML_NOTE = '.fhtml is recommended for the Figma plugin.';
+
+// When .html is selected, the caption becomes an amber warning explaining that
+// raw HTML saves one file per breakpoint, while .fhtml stays a single bundle.
+function updateFormatCaption() {
+  const isHtml = getFormatR() === 'html'; // both controls are kept in sync
+  const capR = document.getElementById('fmt-cap-r');
+  const capP = document.getElementById('fmt-cap-p');
+  if (capR) {
+    if (isHtml) {
+      const n = lastCaptureCount || enabledBreakpoints().length || 1;
+      capR.textContent =
+        `⚠ Saves ${n} separate .html file${n === 1 ? '' : 's'} (one per breakpoint). ` +
+        `.fhtml keeps everything in one file the Figma plugin reads directly.`;
+    } else {
+      capR.textContent = FHTML_NOTE;
+    }
+    capR.className = 'seg-cap' + (isHtml ? ' warn' : '');
+  }
+  if (capP) {
+    // Selection is a single element — no multi-file issue, just the preference.
+    capP.textContent = isHtml
+      ? '⚠ Raw .html. .fhtml works better with the Figma plugin.'
+      : FHTML_NOTE;
+    capP.className = 'seg-cap' + (isHtml ? ' warn' : '');
+  }
+}
 function enabledBreakpoints() {
   return rowEls
     .filter((r) => r.on.checked)
@@ -181,10 +213,12 @@ async function restore() {
       buildGrid(saved.breakpoints);
       if (typeof saved.theme === 'string') setTheme(saved.theme);
       if (typeof saved.format === 'string') setFormat(saved.format);
+      updateFormatCaption();
       return;
     }
   } catch {}
   buildGrid(PRESETS);
+  updateFormatCaption();
 }
 
 // --- panel / status helpers ---
@@ -236,6 +270,8 @@ $capFull.addEventListener('click', async () => {
     });
     if (result && result.cancelled) { showPanel('setup'); return; }
     if (!result || !result.ok) throw new Error((result && result.error) || 'Capture failed');
+    lastCaptureCount = result.count || enabledBreakpoints().length;
+    updateFormatCaption();
     showPanel('result');
   } catch (err) {
     showPanel('setup');
@@ -266,7 +302,7 @@ $doDownload.addEventListener('click', () => deliverHeld('download'));
 $resultBack.addEventListener('click', () => showPanel('setup'));
 
 // --- Capture Selection: choose delivery, then pick (popup closes) ---
-$capPick.addEventListener('click', () => showPanel('pick'));
+$capPick.addEventListener('click', () => { updateFormatCaption(); showPanel('pick'); });
 $pickBack.addEventListener('click', () => showPanel('setup'));
 
 // Each delivery button both chooses the output AND starts the picker. The popup
@@ -290,8 +326,8 @@ $pickCopy.addEventListener('click', () => startPick('clipboard'));
 $pickDownload.addEventListener('click', () => startPick('download'));
 
 // keep both format segmented controls in sync; persist theme/output changes
-initSeg($segR, (v) => { segSet($segP, v); persist(); });
-initSeg($segP, (v) => { segSet($segR, v); persist(); });
+initSeg($segR, (v) => { segSet($segP, v); persist(); updateFormatCaption(); });
+initSeg($segP, (v) => { segSet($segR, v); persist(); updateFormatCaption(); });
 document.querySelectorAll('input[name="theme"]').forEach((r) => r.addEventListener('change', persist));
 
 function formatBytes(n) {
