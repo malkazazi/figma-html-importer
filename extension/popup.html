@@ -145,8 +145,9 @@
 
   /* ---- result screen ---- */
   #panel-result { text-align: center; }
+  .hr { height: 1px; background: #eaecef; border: 0; margin: 0; }
   .check {
-    width: 58px; height: 58px; margin: 6px auto 10px;
+    width: 58px; height: 58px; margin: 18px auto 22px;
     border-radius: 50%; border: 4px solid #16a34a;
     display: flex; align-items: center; justify-content: center;
   }
@@ -221,11 +222,13 @@
   <!-- ───────────── RESULT (Current Page) ───────────── -->
   <section id="panel-result" hidden>
     <button id="result-back" class="backlink">‹ Back, new capture</button>
+    <div class="hr"></div>
     <div class="check">
       <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
+    <div class="hr"></div>
 
-    <div class="field">
+    <div class="field" style="margin-top:16px;">
       <span class="lbl">Format</span>
       <div class="seg" id="seg-format-r">
         <button type="button" class="seg-opt active" data-val="fhtml">.fhtml</button>
