@@ -52,7 +52,6 @@ const $capFull    = document.getElementById('cap-full');
 const $capPick    = document.getElementById('cap-pick');
 const $cancel     = document.getElementById('cancel');
 const $loadingTxt = document.getElementById('loading-text');
-const $resultUrl  = document.getElementById('result-url');
 const $doCopy     = document.getElementById('do-copy');
 const $doDownload = document.getElementById('do-download');
 const $resultBack = document.getElementById('result-back');
@@ -89,31 +88,26 @@ function buildGrid(presets) {
     icon.className = 'dev';
     icon.innerHTML = deviceIcon(p.w);
 
-    const label = document.createElement('input');
-    label.type = 'text';
-    label.value = p.label;
-
     const w = document.createElement('input');
     w.type = 'number'; w.value = String(p.w); w.min = '320'; w.max = '3840';
 
-    const x = document.createElement('span');
-    x.className = 'x'; x.textContent = '×';
+    const px = document.createElement('span');
+    px.className = 'px'; px.textContent = 'px';
 
-    const h = document.createElement('input');
-    h.type = 'number'; h.value = String(p.h); h.min = '240'; h.max = '3840';
-
-    $grid.append(on, icon, label, w, x, h);
+    // Only the width is user-editable (like html.to.design). The label and a
+    // sensible viewport height are kept as fixed metadata per row — they still
+    // drive the emulated viewport + Figma frame names, just aren't shown.
+    $grid.append(on, icon, w, px);
 
     const sync = () => {
       const enabled = on.checked;
-      [icon, label, w, h, x].forEach((el) => (el.style.opacity = enabled ? '1' : '.45'));
+      [icon, w, px].forEach((el) => (el.style.opacity = enabled ? '1' : '.45'));
     };
     on.addEventListener('change', () => { sync(); persist(); });
     w.addEventListener('input', () => { icon.innerHTML = deviceIcon(parseInt(w.value, 10) || 0); persist(); });
-    [label, h].forEach((el) => el.addEventListener('input', persist));
     sync();
 
-    rowEls.push({ on, label, w, h, icon });
+    rowEls.push({ on, w, icon, label: p.label, height: p.h });
   });
 }
 
@@ -127,18 +121,28 @@ function setTheme(v) {
   const t = document.querySelector(`input[name="theme"][value="${v}"]`);
   if (t) t.checked = true;
 }
-function getFormatR() {
-  const c = document.querySelector('input[name="format-r"]:checked');
-  return c ? c.value : 'fhtml';
+// Format is chosen via two iOS-style segmented controls (one on the result
+// screen, one on the selection-delivery screen). They're kept in sync so
+// .fhtml/.html is a single remembered preference.
+const $segR = document.getElementById('seg-format-r');
+const $segP = document.getElementById('seg-format-p');
+
+function segValue(seg) {
+  const a = seg && seg.querySelector('.seg-opt.active');
+  return a ? a.dataset.val : 'fhtml';
 }
-function getFormatP() {
-  const c = document.querySelector('input[name="format-p"]:checked');
-  return c ? c.value : 'fhtml';
+function segSet(seg, v) {
+  if (!seg) return;
+  seg.querySelectorAll('.seg-opt').forEach((b) => b.classList.toggle('active', b.dataset.val === v));
 }
-function setFormat(v) {
-  document.querySelectorAll(`input[name="format-r"][value="${v}"], input[name="format-p"][value="${v}"]`)
-    .forEach((el) => (el.checked = true));
+function initSeg(seg, onChange) {
+  if (!seg) return;
+  seg.querySelectorAll('.seg-opt').forEach((btn) =>
+    btn.addEventListener('click', () => { segSet(seg, btn.dataset.val); onChange(btn.dataset.val); }));
 }
+function getFormatR() { return segValue($segR); }
+function getFormatP() { return segValue($segP); }
+function setFormat(v) { segSet($segR, v); segSet($segP, v); }
 function getOutputP() {
   const c = document.querySelector('input[name="output-p"]:checked');
   return c ? c.value : 'clipboard';
@@ -152,9 +156,9 @@ function enabledBreakpoints() {
   return rowEls
     .filter((r) => r.on.checked)
     .map((r) => ({
-      label: r.label.value.trim() || 'BP',
+      label: r.label || 'BP',
       width: Math.max(320, parseInt(r.w.value, 10) || 0),
-      height: Math.max(240, parseInt(r.h.value, 10) || 0),
+      height: Math.max(240, r.height || 0),
     }));
 }
 
@@ -164,9 +168,9 @@ function readConfig() {
   return {
     breakpoints: rowEls.map((r) => ({
       on: r.on.checked,
-      label: r.label.value.trim() || 'BP',
+      label: r.label || 'BP',
       w: Math.max(320, parseInt(r.w.value, 10) || 0),
-      h: Math.max(240, parseInt(r.h.value, 10) || 0),
+      h: r.height || 900,
     })),
     theme: getTheme(),
     format: getFormatR(),
@@ -240,7 +244,6 @@ $capFull.addEventListener('click', async () => {
     });
     if (result && result.cancelled) { showPanel('setup'); return; }
     if (!result || !result.ok) throw new Error((result && result.error) || 'Capture failed');
-    $resultUrl.textContent = result.url || result.host || '';
     showPanel('result');
   } catch (err) {
     showPanel('setup');
@@ -290,9 +293,9 @@ $pickGo.addEventListener('click', async () => {
   }
 });
 
-// keep both format groups + theme/output in sync with storage
-document.querySelectorAll('input[name="format-r"], input[name="format-p"]').forEach((r) =>
-  r.addEventListener('change', (e) => { setFormat(e.target.value); persist(); }));
+// keep both format segmented controls in sync; persist theme/output changes
+initSeg($segR, (v) => { segSet($segP, v); persist(); });
+initSeg($segP, (v) => { segSet($segR, v); persist(); });
 document.querySelectorAll('input[name="theme"]').forEach((r) => r.addEventListener('change', persist));
 document.querySelectorAll('input[name="output-p"]').forEach((r) => r.addEventListener('change', persist));
 
