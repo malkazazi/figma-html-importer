@@ -168,6 +168,11 @@
   .dicon svg { display: block; }
   .dinfo { flex: 1 1 auto; min-width: 0; }
   .dinfo b { display: block; font-size: 13px; font-weight: 600; }
+  .badge {
+    display: inline-block; margin-left: 6px; vertical-align: middle;
+    font: 700 9px/1 system-ui; color: #067647; background: #e7f6ee;
+    padding: 3px 6px; border-radius: 999px;
+  }
   .dinfo span { display: block; font-size: 11px; color: #777; margin-top: 2px; }
   .drow .grow { flex: 1 1 auto; text-align: center; }
 
@@ -244,7 +249,7 @@
     <div class="deliver-rows">
       <div class="drow">
         <span class="dicon" data-icon="copy"></span>
-        <div class="dinfo"><b>Copy to clipboard</b><span>Paste into the Figma plugin's textarea.</span></div>
+        <div class="dinfo"><b>Copy to clipboard <span class="badge">Recommended</span></b><span>Paste into the Figma plugin's textarea.</span></div>
         <button id="do-copy" class="sm blue">Copy</button>
       </div>
       <div class="drow">
@@ -275,13 +280,13 @@
     <div class="deliver-rows">
       <div class="drow">
         <span class="dicon" data-icon="copy"></span>
-        <div class="dinfo"><b>Copy to clipboard</b><span>Paste into the Figma plugin's textarea.</span></div>
-        <button id="pick-copy" class="sm blue">Copy</button>
+        <div class="dinfo"><b>Copy to clipboard <span class="badge">Recommended</span></b><span>Paste into the Figma plugin's textarea.</span></div>
+        <button id="pick-copy" class="sm blue">Pick element</button>
       </div>
       <div class="drow">
         <span class="dicon" data-icon="download"></span>
         <div class="dinfo"><b>Download file</b><span>Drop the file into the Figma plugin window.</span></div>
-        <button id="pick-download" class="sm">Download</button>
+        <button id="pick-download" class="sm">Pick element</button>
       </div>
     </div>
   </section>
