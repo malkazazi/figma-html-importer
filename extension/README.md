@@ -48,8 +48,8 @@ list) on the left and a **Theme** on the right, then choose one of two actions �
 When you only want one component (e.g. a button, a card, a navbar):
 
 1. On the setup screen, click **Capture Selection**.
-2. On the next screen choose your **format** and **output** (clipboard or
-   download), then click **Pick element →**.
+2. On the next screen choose your **format**, then click **Copy to clipboard**
+   or **Download file** — that button picks the output and starts the picker.
 3. The popup closes and a hover overlay appears on the page. Move the mouse to
    highlight the element you want. **A single click captures it** instantly, or
    press **Esc** to cancel.

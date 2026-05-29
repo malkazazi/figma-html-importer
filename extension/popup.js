@@ -36,6 +36,8 @@ const ICONS = {
   moon:    `<svg width="16" height="16" viewBox="0 0 24 24" ${S}><path d="M21 12.8A8 8 0 1 1 11.2 3a6 6 0 0 0 9.8 9.8z"/></svg>`,
   cam:     `<svg width="20" height="20" viewBox="0 0 24 24" ${S}><rect x="3" y="6.5" width="18" height="13" rx="2"/><path d="M8.5 6.5L10 4h4l1.5 2.5"/><circle cx="12" cy="13" r="3.2"/></svg>`,
   'cam-sel': `<svg width="20" height="20" viewBox="0 0 24 24" ${S}><rect x="2.5" y="5.5" width="19" height="15" rx="2" stroke-dasharray="3 2.4"/><circle cx="12" cy="13" r="3"/></svg>`,
+  copy:     `<svg width="18" height="18" viewBox="0 0 24 24" ${S}><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>`,
+  download: `<svg width="18" height="18" viewBox="0 0 24 24" ${S}><path d="M12 3v11M8 10l4 4 4-4M5 20h14"/></svg>`,
 };
 
 function deviceIcon(width) {
@@ -55,8 +57,9 @@ const $loadingTxt = document.getElementById('loading-text');
 const $doCopy     = document.getElementById('do-copy');
 const $doDownload = document.getElementById('do-download');
 const $resultBack = document.getElementById('result-back');
-const $pickGo     = document.getElementById('pick-go');
-const $pickBack   = document.getElementById('pick-back');
+const $pickCopy     = document.getElementById('pick-copy');
+const $pickDownload = document.getElementById('pick-download');
+const $pickBack     = document.getElementById('pick-back');
 
 const PANELS = {
   setup:   document.getElementById('panel-setup'),
@@ -71,7 +74,7 @@ const rowEls = [];
 // --- rendering ---
 
 function renderStaticIcons() {
-  document.querySelectorAll('.dev[data-icon]').forEach((el) => {
+  document.querySelectorAll('[data-icon]').forEach((el) => {
     el.innerHTML = ICONS[el.getAttribute('data-icon')] || '';
   });
 }
@@ -143,15 +146,6 @@ function initSeg(seg, onChange) {
 function getFormatR() { return segValue($segR); }
 function getFormatP() { return segValue($segP); }
 function setFormat(v) { segSet($segR, v); segSet($segP, v); }
-function getOutputP() {
-  const c = document.querySelector('input[name="output-p"]:checked');
-  return c ? c.value : 'clipboard';
-}
-function setOutputP(v) {
-  const t = document.querySelector(`input[name="output-p"][value="${v}"]`);
-  if (t) t.checked = true;
-}
-
 function enabledBreakpoints() {
   return rowEls
     .filter((r) => r.on.checked)
@@ -174,7 +168,6 @@ function readConfig() {
     })),
     theme: getTheme(),
     format: getFormatR(),
-    output: getOutputP(),
   };
 }
 function persist() {
@@ -188,7 +181,6 @@ async function restore() {
       buildGrid(saved.breakpoints);
       if (typeof saved.theme === 'string') setTheme(saved.theme);
       if (typeof saved.format === 'string') setFormat(saved.format);
-      if (typeof saved.output === 'string') setOutputP(saved.output);
       return;
     }
   } catch {}
@@ -276,28 +268,31 @@ $resultBack.addEventListener('click', () => showPanel('setup'));
 // --- Capture Selection: choose delivery, then pick (popup closes) ---
 $capPick.addEventListener('click', () => showPanel('pick'));
 $pickBack.addEventListener('click', () => showPanel('setup'));
-$pickGo.addEventListener('click', async () => {
+
+// Each delivery button both chooses the output AND starts the picker. The popup
+// closes immediately so the user's first page click lands on the element.
+async function startPick(output) {
   try {
     const tab = await activeTab();
     await chrome.runtime.sendMessage({
       type: 'start-pick',
       tabId: tab.id,
       theme: getTheme(),
-      output: getOutputP(),
+      output,
       format: getFormatP(),
     }).catch(() => {});
-    // Close immediately so the user's first page click lands on the element.
     window.close();
   } catch (err) {
     setStatus(errMsg(err), 'error');
   }
-});
+}
+$pickCopy.addEventListener('click', () => startPick('clipboard'));
+$pickDownload.addEventListener('click', () => startPick('download'));
 
 // keep both format segmented controls in sync; persist theme/output changes
 initSeg($segR, (v) => { segSet($segP, v); persist(); });
 initSeg($segP, (v) => { segSet($segR, v); persist(); });
 document.querySelectorAll('input[name="theme"]').forEach((r) => r.addEventListener('change', persist));
-document.querySelectorAll('input[name="output-p"]').forEach((r) => r.addEventListener('change', persist));
 
 function formatBytes(n) {
   if (!n) return '0 B';

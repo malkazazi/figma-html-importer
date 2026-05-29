@@ -159,13 +159,16 @@
   }
   .deliver-rows { text-align: left; }
   .drow {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 11px;
     padding: 12px 0; border-top: 1px solid #eee;
   }
   .drow:first-child { border-top: 0; }
+  .dicon { flex: 0 0 auto; color: #555; display: inline-flex; }
+  .dicon svg { display: block; }
   .dinfo { flex: 1 1 auto; min-width: 0; }
   .dinfo b { display: block; font-size: 13px; font-weight: 600; }
   .dinfo span { display: block; font-size: 11px; color: #777; margin-top: 2px; }
+  .drow .grow { flex: 1 1 auto; text-align: center; }
 
   .status {
     font-size: 11px; color: #555; margin-top: 12px; min-height: 16px;
@@ -239,10 +242,12 @@
 
     <div class="deliver-rows">
       <div class="drow">
+        <span class="dicon" data-icon="copy"></span>
         <div class="dinfo"><b>Copy to clipboard</b><span>Paste into the Figma plugin's textarea.</span></div>
         <button id="do-copy" class="sm blue">Copy</button>
       </div>
       <div class="drow">
+        <span class="dicon" data-icon="download"></span>
         <div class="dinfo"><b>Download file</b><span>Drop the file into the Figma plugin window.</span></div>
         <button id="do-download" class="sm">Download</button>
       </div>
@@ -251,7 +256,10 @@
 
   <!-- ───────────── DELIVERY (Selection — choose before picking) ───────────── -->
   <section id="panel-deliver-pick" hidden>
-    <div class="field">
+    <button id="pick-back" class="backlink">‹ Back</button>
+    <div class="hr"></div>
+
+    <div class="field" style="margin-top:14px;">
       <span class="lbl">Format</span>
       <div class="seg" id="seg-format-p">
         <button type="button" class="seg-opt active" data-val="fhtml">.fhtml</button>
@@ -259,19 +267,21 @@
       </div>
       <div class="seg-cap">.fhtml is recommended for the Figma plugin.</div>
     </div>
-    <div class="field">
-      <span class="lbl">Output</span>
-      <div class="options">
-        <label class="radio"><input type="radio" name="output-p" value="clipboard" checked> Copy to clipboard <span class="rec">(recommended)</span></label>
-        <label class="radio"><input type="radio" name="output-p" value="download"> Download file</label>
+
+    <div class="hr"></div>
+
+    <div class="seg-cap" style="margin:12px 0 2px;">Choose an output — then click the element you want on the page.</div>
+    <div class="deliver-rows">
+      <div class="drow">
+        <span class="dicon" data-icon="copy"></span>
+        <div class="dinfo"><b>Copy to clipboard</b><span>Paste into the Figma plugin's textarea.</span></div>
+        <button id="pick-copy" class="sm blue">Copy</button>
       </div>
-    </div>
-    <div class="status" id="pick-note" style="text-align:left;color:#6b7280;">
-      Click <b>Pick element</b>, then click the element you want on the page.
-    </div>
-    <div class="btn-row">
-      <button id="pick-back" class="secondary">← Back</button>
-      <button id="pick-go" class="sm yellow grow">Pick element →</button>
+      <div class="drow">
+        <span class="dicon" data-icon="download"></span>
+        <div class="dinfo"><b>Download file</b><span>Drop the file into the Figma plugin window.</span></div>
+        <button id="pick-download" class="sm">Download</button>
+      </div>
     </div>
   </section>
 
