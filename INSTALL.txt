@@ -29,4 +29,22 @@ HOW TO USE IT
 2. In Figma, run the "HTML Importer (Local)" plugin. Drop the .fhtml
    file in, or paste the clipboard, and click Import.
 
+------------------------------------------------------------
+GETTING UPDATES  (one command — no re-downloading by hand)
+------------------------------------------------------------
+When a new version ships, update this folder in place:
+
+  • Easiest (Mac): double-click  update.command  in this folder.
+  • Or in Terminal: drag  update.sh  onto the Terminal window and
+    press Enter  (or run:  bash update.sh ).
+
+It downloads the latest version and overwrites these files for you.
+Then just refresh both apps:
+  • Chrome: open chrome://extensions and click the reload (↻) icon
+    on "Figma Multi-Breakpoint Capture".
+  • Figma:  just re-run the "HTML Importer (Local)" plugin.
+
+Keep this folder where it is — Chrome and Figma load from this exact
+location, so updating in place is what makes the refresh work.
+
 Full details and limitations are in README.md.
