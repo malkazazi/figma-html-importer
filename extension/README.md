@@ -54,6 +54,9 @@ the whole page:
 3. The popup closes and a hover overlay appears on the page. Move the mouse to
    highlight the element you want. **A single click captures it** instantly, or
    press **Esc** to cancel.
+4. While capturing, a spinner shows at the bottom of the page and the toolbar
+   icon shows an animated badge; the usual success/error toast confirms when
+   it's done.
 4. The extension serializes only that element's subtree (with full inlined
    CSS / fonts) and delivers it via the same Output mode (download or
    clipboard). A desktop notification confirms success.

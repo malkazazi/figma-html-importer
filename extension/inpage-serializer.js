@@ -133,6 +133,11 @@
   // the user's live page stays exactly as they left it.
   const root = document.documentElement.cloneNode(true);
 
+  // Drop any of our own injected UI from the clone (progress spinner, toasts)
+  // so they can never leak into the captured HTML, regardless of whether one
+  // happened to be on the page when we snapshotted it.
+  root.querySelectorAll('#__figma_capture_spinner, #__figma_capture_toast').forEach((n) => n.remove());
+
   // Live cleanup: drop the marker so we don't leak it back to the user.
   if (livePicked) livePicked.removeAttribute(PICK_ATTR);
   try { delete window.__figmaPickedSelector; } catch { window.__figmaPickedSelector = undefined; }

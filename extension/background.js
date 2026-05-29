@@ -83,6 +83,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
 async function runFullCapture({ tabId, breakpoints, theme, settleMs, output, format }) {
   if (inFlight) throw new Error('A capture is already running');
   inFlight = true;
+  startBadgeBusy(tabId);
 
   const target = { tabId };
   let attached = false;
@@ -155,6 +156,7 @@ async function runFullCapture({ tabId, breakpoints, theme, settleMs, output, for
     if (attached) {
       try { await chrome.debugger.detach(target); } catch {}
     }
+    stopBadgeBusy(tabId);
     inFlight = false;
   }
 }
@@ -177,6 +179,12 @@ async function runPickCapture({ tabId, theme, output, format }) {
     const selector = await new Promise((resolve, reject) => {
       pickerResolver = { resolve, reject };
     });
+
+    // Element is chosen — show a spinner immediately. Capturing (asset
+    // inlining, cross-origin fetches) can take a moment and the popup is gone,
+    // so this is the user's only progress signal until the final toast.
+    await showSpinner(tabId, 'Capturing element…');
+    startBadgeBusy(tabId);
 
     // 3. Optional theme emulation. For pick mode we don't resize the viewport;
     //    the user already framed the page however they wanted it.
@@ -224,6 +232,7 @@ async function runPickCapture({ tabId, theme, output, format }) {
 
       const { filename, bytes } = await deliver(envelope, [{ width: dims.w, label: 'el' }], theme, output, /* pick */ true, format);
       const where = output === 'clipboard' ? 'Copied to clipboard' : `Saved ${filename}`;
+      await hideSpinner(tabId);
       showToast(tabId, 'success', `Element captured · ${where} (${formatBytes(bytes)})`);
     } finally {
       if (attached) {
@@ -232,6 +241,8 @@ async function runPickCapture({ tabId, theme, output, format }) {
       }
     }
   } finally {
+    await hideSpinner(tabId);
+    stopBadgeBusy(tabId);
     pickerResolver = null;
     inFlight = false;
   }
@@ -501,6 +512,93 @@ async function showToast(tabId, kind, message) {
       world: 'ISOLATED',
     });
   } catch { /* tab closed, navigated, or restricted URL — no toast possible */ }
+}
+
+// Persistent in-page progress indicator (indeterminate spinner) for pick mode,
+// where the popup is closed and can't show progress. Shown the instant the user
+// picks an element and removed right before the final success/error toast.
+// Serialize time is unpredictable (asset fetching, network) so a spinner — not
+// a countdown or progress bar — is the honest indicator. The serializer strips
+// any element with this id from its clone, so it never leaks into the capture.
+async function showSpinner(tabId, message) {
+  if (!tabId) return;
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      func: (m) => {
+        const Z = 2147483647;
+        const id = '__figma_capture_spinner';
+        document.getElementById(id)?.remove();
+        const wrap = document.createElement('div');
+        wrap.id = id;
+        wrap.style.cssText = [
+          'position:fixed', 'left:50%', 'bottom:28px',
+          'transform:translateX(-50%) translateY(20px)',
+          'display:flex', 'align-items:center', 'gap:10px',
+          'background:#111827', 'color:#fff',
+          'font:13px/1.45 -apple-system,system-ui,Segoe UI,Roboto,sans-serif',
+          'padding:12px 18px', 'border-radius:8px',
+          'box-shadow:0 12px 32px rgba(0,0,0,0.28)', 'z-index:' + Z,
+          'max-width:80vw', 'pointer-events:none',
+          'opacity:0', 'transition:opacity 180ms ease, transform 180ms ease',
+        ].join(';');
+        const sp = document.createElement('div');
+        sp.style.cssText = [
+          'width:15px', 'height:15px', 'flex:0 0 auto', 'border-radius:50%',
+          'border:2px solid rgba(255,255,255,0.30)', 'border-top-color:#fff',
+        ].join(';');
+        const txt = document.createElement('span');
+        txt.textContent = m;
+        wrap.append(sp, txt);
+        document.documentElement.appendChild(wrap);
+        // Web Animations API — no <style>/@keyframes injection into the page.
+        sp.animate(
+          [{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
+          { duration: 750, iterations: Infinity },
+        );
+        requestAnimationFrame(() => {
+          wrap.style.opacity = '1';
+          wrap.style.transform = 'translateX(-50%) translateY(0)';
+        });
+      },
+      args: [message],
+      world: 'ISOLATED',
+    });
+  } catch { /* tab gone or restricted — no spinner possible */ }
+}
+
+async function hideSpinner(tabId) {
+  if (!tabId) return;
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => { document.getElementById('__figma_capture_spinner')?.remove(); },
+      world: 'ISOLATED',
+    });
+  } catch { /* best effort */ }
+}
+
+// Toolbar-icon loading state: while a capture runs we pulse an animated badge
+// on the extension icon (cycling dots). The in-flight await chain keeps the
+// service worker alive so the interval keeps ticking; we clear it on completion.
+let badgeTimer = null;
+
+function startBadgeBusy(tabId) {
+  stopBadgeBusy(tabId);
+  const frames = ['·', '··', '···'];
+  let i = 0;
+  chrome.action.setBadgeBackgroundColor({ color: '#18a0fb' }).catch(() => {});
+  const tick = () => {
+    const text = frames[i++ % frames.length];
+    chrome.action.setBadgeText(tabId ? { text, tabId } : { text }).catch(() => {});
+  };
+  tick();
+  badgeTimer = setInterval(tick, 400);
+}
+
+function stopBadgeBusy(tabId) {
+  if (badgeTimer) { clearInterval(badgeTimer); badgeTimer = null; }
+  chrome.action.setBadgeText(tabId ? { text: '', tabId } : { text: '' }).catch(() => {});
 }
 
 function formatSuccessMessage(result, output) {
