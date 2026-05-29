@@ -115,7 +115,7 @@ async function runFullCapture({ tabId, breakpoints, theme, settleMs, output, for
       }
 
       progress(`Letting page settle → ${tag}`);
-      await sleep(Math.max(500, settleMs || 0));
+      await sleep(Math.max(0, settleMs || 0));
 
       // Pre-serialization scroll pass: many pages lazy-load content (images,
       // sections below the fold, IntersectionObserver-driven hydration) and
