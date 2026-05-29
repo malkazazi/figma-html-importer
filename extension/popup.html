@@ -13,7 +13,19 @@
     width: 360px;
     background: #fff;
   }
-  h1 { font-size: 13px; font-weight: 600; margin: 0 0 4px; }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .brand img {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    flex: 0 0 auto;
+  }
+  h1 { font-size: 13px; font-weight: 600; margin: 0; }
   .hint {
     font-size: 11px;
     color: #888;
@@ -139,7 +151,10 @@
 </style>
 </head>
 <body>
-  <h1>Capture for Figma</h1>
+  <div class="brand">
+    <img src="icons/icon-48.png" alt="">
+    <h1>Capture for Figma</h1>
+  </div>
   <div class="hint">Captures the active tab at each enabled breakpoint by actually resizing the browser. Login state and JS-rendered responsive markup are preserved.</div>
 
   <div class="bp-section">
