@@ -162,13 +162,13 @@ function updateFormatCaption() {
   if (capR) {
     const n = lastCaptureCount || enabledBreakpoints().length || 1;
     capR.textContent = isHtml
-      ? `⚠ Raw HTML — saves ${n} separate file${n === 1 ? '' : 's'}. Use .fhtml for the Figma plugin (one file).`
+      ? `Use .html for editing in code (${n} separate file${n === 1 ? '' : 's'}). Use .fhtml for uploading into the Figma plugin (one file).`
       : FHTML_NOTE;
     capR.className = 'seg-cap' + (isHtml ? ' warn' : '');
   }
   if (capP) {
     capP.textContent = isHtml
-      ? '⚠ Raw HTML for editing. Use .fhtml to upload to the Figma plugin.'
+      ? 'Use .html for editing in code. Use .fhtml for uploading into the Figma plugin.'
       : FHTML_NOTE;
     capP.className = 'seg-cap' + (isHtml ? ' warn' : '');
   }

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Figma Multi-Breakpoint Capture",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Capture the current tab at multiple viewport widths into a single .fhtml bundle for the Figma HTML Importer plugin.",
   "permissions": ["debugger", "scripting", "downloads", "activeTab", "storage", "offscreen", "clipboardWrite", "notifications"],
   "host_permissions": ["<all_urls>"],
