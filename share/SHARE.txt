@@ -1,0 +1,56 @@
+HTML → Figma Importer — how to share it
+========================================
+Open this file whenever you want to send the tool to someone. Copy whichever
+block fits the person you're sending to.
+
+
+────────────────────────────────────────────────────────────────────
+1) EASIEST — a link they click in the browser
+────────────────────────────────────────────────────────────────────
+Always points at the newest version:
+
+  https://github.com/malkazazi/figma-html-importer/releases/latest
+
+Tell them: scroll to "Assets" and download "figma-html-importer.zip"
+(NOT the "Source code" ones).
+
+
+────────────────────────────────────────────────────────────────────
+2) DIRECT DOWNLOAD — a link that downloads the zip immediately
+────────────────────────────────────────────────────────────────────
+No page to navigate, no risk of grabbing the wrong file:
+
+  https://github.com/malkazazi/figma-html-importer/releases/latest/download/figma-html-importer.zip
+
+
+────────────────────────────────────────────────────────────────────
+3) TERMINAL — one command (macOS) that downloads, unzips, opens it
+────────────────────────────────────────────────────────────────────
+  curl -L -o ~/Downloads/figma-html-importer.zip https://github.com/malkazazi/figma-html-importer/releases/latest/download/figma-html-importer.zip && unzip -o ~/Downloads/figma-html-importer.zip -d ~/Downloads && open ~/Downloads/figma-html-importer
+
+
+────────────────────────────────────────────────────────────────────
+READY-TO-PASTE MESSAGE (send this to a designer)
+────────────────────────────────────────────────────────────────────
+Hey — here's the HTML→Figma importer.
+
+1. Download it here (under "Assets", grab "figma-html-importer.zip" — not the
+   "Source code" files):
+   https://github.com/malkazazi/figma-html-importer/releases/latest
+
+2. Unzip it and leave the folder where it lands (don't move it afterward).
+
+3. Open INSTALL.txt inside and follow the steps — two short parts, one for
+   Figma (needs the DESKTOP app, not the browser) and one for Chrome.
+
+To update later: double-click "update.command" in that folder, then reload the
+extension in chrome://extensions and re-run the plugin in Figma.
+
+
+────────────────────────────────────────────────────────────────────
+NOTES
+────────────────────────────────────────────────────────────────────
+- The Figma plugin requires the Figma DESKTOP app (dev plugins can't load in
+  the browser version). This is the #1 thing people trip on.
+- These links never change between versions, so this file stays correct after
+  every release.
