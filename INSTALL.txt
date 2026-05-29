@@ -34,9 +34,12 @@ GETTING UPDATES  (one command — no re-downloading by hand)
 ------------------------------------------------------------
 When a new version ships, update this folder in place:
 
-  • Easiest (Mac): double-click  update.command  in this folder.
-  • Or in Terminal: drag  update.sh  onto the Terminal window and
-    press Enter  (or run:  bash update.sh ).
+  • Double-click  update.command  in this folder.
+
+  • First time only: macOS may say it "cannot verify the developer."
+    If so, right-click (or Control-click) update.command → "Open" →
+    "Open" once. After that, plain double-click works every time.
+    (Prefer the terminal? You can also run:  bash update.command )
 
 It downloads the latest version and overwrites these files for you.
 Then just refresh both apps:

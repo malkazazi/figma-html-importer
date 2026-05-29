@@ -26,8 +26,8 @@ mkdir -p "$STAGE/plugin"
 cp -R plugin/dist "$STAGE/plugin/dist"
 cp plugin/manifest.json "$STAGE/plugin/manifest.json"
 cp -R extension "$STAGE/extension"
-cp README.md INSTALL.txt update.sh update.command "$STAGE/"
-chmod +x "$STAGE/update.sh" "$STAGE/update.command"
+cp README.md INSTALL.txt update.command "$STAGE/"
+chmod +x "$STAGE/update.command"
 find "$STAGE" -name '.DS_Store' -delete
 
 rm -f "$ZIP"
