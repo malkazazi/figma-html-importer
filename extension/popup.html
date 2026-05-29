@@ -75,7 +75,8 @@
 
   /* ---- shared small buttons / rows ---- */
   button.sm {
-    width: auto; font: 600 12px/1 system-ui; padding: 9px 16px;
+    flex: 0 0 auto; width: auto; white-space: nowrap;
+    font: 600 12px/1 system-ui; padding: 9px 16px;
     border: 0; border-radius: 8px; background: #eef0f2; color: #222; cursor: pointer;
   }
   button.sm:hover { background: #e4e7ea; }
@@ -168,11 +169,7 @@
   .dicon svg { display: block; }
   .dinfo { flex: 1 1 auto; min-width: 0; }
   .dinfo b { display: block; font-size: 13px; font-weight: 600; }
-  .badge {
-    display: inline-block; margin-left: 6px; vertical-align: middle;
-    font: 700 9px/1 system-ui; color: #067647; background: #e7f6ee;
-    padding: 3px 6px; border-radius: 999px;
-  }
+  .recommended { margin-left: 6px; font: 500 10.5px system-ui; color: #067647; }
   .dinfo span { display: block; font-size: 11px; color: #777; margin-top: 2px; }
   .drow .grow { flex: 1 1 auto; text-align: center; }
 
@@ -249,7 +246,7 @@
     <div class="deliver-rows">
       <div class="drow">
         <span class="dicon" data-icon="copy"></span>
-        <div class="dinfo"><b>Copy to clipboard <span class="badge">Recommended</span></b><span>Paste into the Figma plugin's textarea.</span></div>
+        <div class="dinfo"><b>Copy to clipboard <span class="recommended">Recommended</span></b><span>Paste into the Figma plugin's textarea.</span></div>
         <button id="do-copy" class="sm blue">Copy</button>
       </div>
       <div class="drow">
@@ -280,7 +277,7 @@
     <div class="deliver-rows">
       <div class="drow">
         <span class="dicon" data-icon="copy"></span>
-        <div class="dinfo"><b>Copy to clipboard <span class="badge">Recommended</span></b><span>Paste into the Figma plugin's textarea.</span></div>
+        <div class="dinfo"><b>Copy to clipboard <span class="recommended">Recommended</span></b><span>Paste into the Figma plugin's textarea.</span></div>
         <button id="pick-copy" class="sm blue">Pick element</button>
       </div>
       <div class="drow">
