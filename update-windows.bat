@@ -2,7 +2,7 @@
 REM ============================================================
 REM  WINDOWS ONLY — double-click to update the HTML -> Figma Importer
 REM ============================================================
-REM  (macOS users: use update.command instead.)
+REM  (macOS users: use update-macos.command instead.)
 REM  If Windows SmartScreen warns: click "More info" then "Run anyway".
 REM  Afterward, reload the extension in Chrome and re-run the plugin in Figma.
 

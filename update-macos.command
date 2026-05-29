@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Updates this HTML → Figma Importer folder to the latest version.
-# Double-click this file in Finder, or run it from a terminal:  bash update.command
+# Double-click this file in Finder, or run it from a terminal:  bash update-macos.command
 # Afterward, reload the extension in Chrome and re-run the plugin in Figma.
 set -euo pipefail
 

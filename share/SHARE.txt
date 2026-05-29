@@ -47,7 +47,7 @@ Hey — here's the HTML→Figma importer.
 3. Open INSTALL.txt inside and follow the steps — two short parts, one for
    Figma (needs the DESKTOP app, not the browser) and one for Chrome.
 
-To update later: double-click "update.command" (Mac) or "update-windows.bat"
+To update later: double-click "update-macos.command" (Mac) or "update-windows.bat"
 (Windows) in that folder, then reload the extension in chrome://extensions and
 re-run the plugin in Figma.
 

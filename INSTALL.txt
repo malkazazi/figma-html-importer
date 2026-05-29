@@ -34,18 +34,15 @@ GETTING UPDATES  (update in place — no re-downloading by hand)
 ------------------------------------------------------------
 When a new version ships, update this folder in place:
 
-  ┌─ macOS ──────────────────────────────────────────────┐
-  │ • Double-click  update.command  in this folder.       │
-  │ • First time only: if macOS says it "cannot verify    │
-  │   the developer," right-click update.command →        │
-  │   "Open" → "Open" once. (Terminal: bash update.command)│
-  └───────────────────────────────────────────────────────┘
+  macOS:
+    • Double-click  update-macos.command  in this folder.
+    • First time only: if macOS says it "cannot verify the developer,"
+      right-click update-macos.command → "Open" → "Open" once.
+      (Prefer the terminal? Run:  bash update-macos.command )
 
-  ┌─ Windows ────────────────────────────────────────────┐
-  │ • Double-click  update-windows.bat  in this folder.   │
-  │ • If SmartScreen warns, click "More info" →           │
-  │   "Run anyway".                                        │
-  └───────────────────────────────────────────────────────┘
+  Windows:
+    • Double-click  update-windows.bat  in this folder.
+    • If SmartScreen warns, click "More info" → "Run anyway".
 
 It downloads the latest version and overwrites these files for you.
 Then just refresh both apps:

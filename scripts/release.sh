@@ -17,7 +17,7 @@ npm run build
 
 STAGE="$(mktemp -d)/figma-html-importer"
 # Stable filename (no version) so releases/latest/download/<name> is a permanent
-# link — the in-folder update.command relies on this.
+# link — the in-folder update-macos.command relies on this.
 ZIP="$ROOT/figma-html-importer.zip"
 mkdir -p "$STAGE/plugin"
 
@@ -26,8 +26,8 @@ mkdir -p "$STAGE/plugin"
 cp -R plugin/dist "$STAGE/plugin/dist"
 cp plugin/manifest.json "$STAGE/plugin/manifest.json"
 cp -R extension "$STAGE/extension"
-cp README.md INSTALL.txt update.command update-windows.bat "$STAGE/"
-chmod +x "$STAGE/update.command"
+cp README.md INSTALL.txt update-macos.command update-windows.bat "$STAGE/"
+chmod +x "$STAGE/update-macos.command"
 find "$STAGE" -name '.DS_Store' -delete
 
 rm -f "$ZIP"
@@ -41,5 +41,5 @@ echo ""
 echo "✓ Released ${VERSION}"
 echo "  First-time download link to share:"
 echo "    https://github.com/malkazazi/figma-html-importer/releases/latest"
-echo "  Permanent direct-zip link (used by update.command):"
+echo "  Permanent direct-zip link (used by update-macos.command):"
 echo "    https://github.com/malkazazi/figma-html-importer/releases/latest/download/figma-html-importer.zip"
