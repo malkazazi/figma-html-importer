@@ -151,29 +151,24 @@ function setFormat(v) { segSet($segR, v); segSet($segP, v); }
 // how many separate .html files the raw format would produce.
 let lastCaptureCount = 0;
 
-const FHTML_NOTE = '.fhtml is recommended for the Figma plugin.';
+const FHTML_NOTE = 'Use .fhtml to upload to the Figma plugin · .html for raw, editable HTML.';
 
-// When .html is selected, the caption becomes an amber warning explaining that
-// raw HTML saves one file per breakpoint, while .fhtml stays a single bundle.
+// Default note explains the choice in one line. Selecting .html turns the
+// caption amber and (on the result screen) warns how many files it'll save.
 function updateFormatCaption() {
   const isHtml = getFormatR() === 'html'; // both controls are kept in sync
   const capR = document.getElementById('fmt-cap-r');
   const capP = document.getElementById('fmt-cap-p');
   if (capR) {
-    if (isHtml) {
-      const n = lastCaptureCount || enabledBreakpoints().length || 1;
-      capR.textContent =
-        `⚠ Saves ${n} separate .html file${n === 1 ? '' : 's'} (one per breakpoint). ` +
-        `.fhtml keeps everything in one file the Figma plugin reads directly.`;
-    } else {
-      capR.textContent = FHTML_NOTE;
-    }
+    const n = lastCaptureCount || enabledBreakpoints().length || 1;
+    capR.textContent = isHtml
+      ? `⚠ Raw HTML — saves ${n} separate file${n === 1 ? '' : 's'}. Use .fhtml for the Figma plugin (one file).`
+      : FHTML_NOTE;
     capR.className = 'seg-cap' + (isHtml ? ' warn' : '');
   }
   if (capP) {
-    // Selection is a single element — no multi-file issue, just the preference.
     capP.textContent = isHtml
-      ? '⚠ Raw .html. .fhtml works better with the Figma plugin.'
+      ? '⚠ Raw HTML for editing. Use .fhtml to upload to the Figma plugin.'
       : FHTML_NOTE;
     capP.className = 'seg-cap' + (isHtml ? ' warn' : '');
   }
