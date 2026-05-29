@@ -1,0 +1,17 @@
+{
+  "name": "figma-html-importer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted HTML to Figma importer. Capture script + Figma plugin.",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:plugin": "node build.mjs plugin",
+    "typecheck": "tsc --noEmit",
+    "release": "bash scripts/release.sh"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.108.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,471 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font: 13px/1.4 -apple-system, system-ui, sans-serif; color: #111; background: #fff; height: 100%; }
+  body { display: flex; flex-direction: column; padding: 12px; gap: 10px; }
+  h1 { font-size: 13px; font-weight: 600; margin: 0; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  label { font-size: 11px; color: #555; letter-spacing: .02em; text-transform: uppercase; font-weight: 600; }
+  textarea {
+    flex: 1; width: 100%; min-height: 150px;
+    font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    border: 1px solid #ddd; border-radius: 6px; padding: 8px; resize: none; outline: none;
+  }
+  textarea:focus { border-color: #18a0fb; }
+  textarea.dragover { border-color: #18a0fb; background: #f0f8ff; }
+  input[type=text], input[type=number] {
+    font: 12px/1.3 -apple-system, system-ui, sans-serif;
+    border: 1px solid #ddd; border-radius: 6px; padding: 6px 8px; outline: none;
+  }
+  input[type=text] { width: 130px; }
+  input[type=number] { width: 68px; }
+  input:focus { border-color: #18a0fb; }
+  button {
+    font: 600 12px/1 -apple-system, system-ui, sans-serif;
+    padding: 8px 14px; border: none; border-radius: 6px; background: #18a0fb; color: #fff; cursor: pointer;
+  }
+  button:hover { background: #0d8fe0; }
+  button:disabled { background: #aaa; cursor: default; }
+  button.secondary { background: #f0f0f0; color: #333; }
+  button.secondary:hover { background: #e4e4e4; }
+  .status { font-size: 11px; color: #555; min-height: 14px; flex: 1; }
+  .status.error { color: #b42318; }
+  .status.success { color: #067647; }
+  .hint { font-size: 11px; color: #888; }
+  .hint code { background: #f4f4f5; padding: 1px 4px; border-radius: 3px; font-size: 10.5px; }
+  input[type=checkbox] { accent-color: #18a0fb; }
+
+  /* Breakpoint table */
+  .bp-section { display: flex; flex-direction: column; gap: 4px; }
+  .bp-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    gap: 4px 6px;
+    align-items: center;
+  }
+  .bp-grid .bp-label-input {
+    font: 11px/1.3 -apple-system, system-ui, sans-serif;
+    width: 100%; min-width: 70px;
+    padding: 4px 6px;
+  }
+  .bp-grid input[type=number] {
+    width: 60px;
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+  .bp-grid .bp-x { color: #888; font-size: 11px; }
+  .bp-grid input[type=checkbox] { margin: 0; }
+  .bp-row.off .bp-label-input,
+  .bp-row.off input[type=number] { opacity: .45; }
+</style>
+</head>
+<body>
+  <h1>HTML → Figma</h1>
+  <div class="hint">Paste or drop a saved <code>.html</code> file (drop multiple for multi-breakpoint), or drop a <code>.fhtml</code> bundle.</div>
+  <textarea id="html" placeholder="<!doctype html>&#10;<html>&#10;  ...&#10;&#10;or drop .html / .fhtml file(s) here" spellcheck="false"></textarea>
+  <input type="file" id="file" accept=".html,.htm,.fhtml,.json,text/html,application/json" multiple style="display:none;">
+
+  <div id="mc-banner" style="display:none;background:#eef6ff;border:1px solid #c8e1ff;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#0a558c;line-height:1.5;"></div>
+
+  <div class="bp-section" id="bp-section">
+    <label>Breakpoints</label>
+    <div class="bp-grid" id="bp-grid">
+      <!-- rows injected by JS -->
+    </div>
+  </div>
+
+  <div class="row" id="single-vp-row" style="display:none;">
+    <label>Viewport</label>
+    <input type="number" id="single-vp-w" value="1280" min="320" max="3840" step="1">
+    <span class="bp-x">×</span>
+    <input type="number" id="single-vp-h" value="800" min="240" max="3840" step="1">
+  </div>
+
+  <div class="row" id="vp-hint-row" style="display:none;">
+    <span class="hint" id="vp-hint"></span>
+    <button id="vp-apply" class="secondary" style="padding:4px 10px;font-size:11px;">Use</button>
+  </div>
+
+  <div class="row">
+    <label>Fallback font</label>
+    <input type="text" id="fallback" value="Inter" placeholder="Inter">
+    <label style="margin-left:8px;"><input type="checkbox" id="autolayout" style="margin-right:6px;vertical-align:-1px;">Auto Layout</label>
+  </div>
+
+  <div class="row">
+    <button id="import">Import</button>
+    <button id="choose" class="secondary">Choose file…</button>
+    <button id="clear" class="secondary">Clear</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <!-- CAPTURE_RUNNER_BUNDLE -->
+
+<script>
+  const $html = document.getElementById('html');
+  const $fallback = document.getElementById('fallback');
+  const $import = document.getElementById('import');
+  const $clear  = document.getElementById('clear');
+  const $choose = document.getElementById('choose');
+  const $file   = document.getElementById('file');
+  const $status = document.getElementById('status');
+  const $mcBanner = document.getElementById('mc-banner');
+
+  // When the user loads .fhtml or .html file(s), we stash the resulting
+  // captures here and the import flow switches to "render each capture's HTML
+  // at its own width". For a single pasted HTML it holds one entry with the
+  // single-viewport inputs as the width/height. Null = empty.
+  let multicapture = null;
+
+  // The breakpoint grid is only used for the legacy "paste once, multiply at
+  // N viewports" flow, which we now keep around as an explicit toggle. By
+  // default raw HTML imports use a single viewport (matches the .fhtml UX).
+  // Breakpoint presets. Largest (Desktop) is last; the Radix viewport hint
+  // writes its detected width into Desktop only.
+  const PRESETS = [
+    { label: 'Mobile',  w: 375,  h: 812,  on: false },
+    { label: 'Tablet',  w: 768,  h: 1024, on: false },
+    { label: 'Laptop',  w: 1280, h: 800,  on: true  },
+    { label: 'Desktop', w: 1920, h: 1080, on: false },
+  ];
+
+  const $bpSection = document.getElementById('bp-section');
+  const $singleVpRow = document.getElementById('single-vp-row');
+  const $singleVpW = document.getElementById('single-vp-w');
+  const $singleVpH = document.getElementById('single-vp-h');
+
+  // Build the breakpoint grid in JS so the row count is easy to change.
+  const $bpGrid = document.getElementById('bp-grid');
+  const bpRowEls = []; // { row, on, label, w, h }
+  PRESETS.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'bp-row';
+    row.style.display = 'contents';
+
+    const on = document.createElement('input');
+    on.type = 'checkbox';
+    on.id = `bp${i}-on`;
+    on.checked = p.on;
+
+    const labelInput = document.createElement('input');
+    labelInput.type = 'text';
+    labelInput.id = `bp${i}-label`;
+    labelInput.className = 'bp-label-input';
+    labelInput.value = p.label;
+
+    const w = document.createElement('input');
+    w.type = 'number'; w.id = `bp${i}-w`; w.value = String(p.w);
+    w.min = '320'; w.max = '3840'; w.step = '1';
+
+    const x = document.createElement('span');
+    x.className = 'bp-x';
+    x.textContent = '×';
+
+    const h = document.createElement('input');
+    h.type = 'number'; h.id = `bp${i}-h`; h.value = String(p.h);
+    h.min = '240'; h.max = '3840'; h.step = '1';
+
+    $bpGrid.appendChild(on);
+    $bpGrid.appendChild(labelInput);
+    $bpGrid.appendChild(w);
+    $bpGrid.appendChild(x);
+    $bpGrid.appendChild(h);
+
+    const updateOpacity = () => {
+      const enabled = on.checked;
+      [labelInput, w, h, x].forEach((el) => el.style.opacity = enabled ? '1' : '.45');
+    };
+    on.addEventListener('change', updateOpacity);
+    updateOpacity();
+
+    bpRowEls.push({ on, label: labelInput, w, h });
+  });
+
+  // Single-viewport mode is the default for raw HTML — the breakpoint grid
+  // is left in the DOM but hidden, because it isn't used in the new flow.
+  $bpSection.style.display = 'none';
+  $singleVpRow.style.display = 'flex';
+
+  function readSingleViewport() {
+    const w = Math.max(320, parseInt($singleVpW.value, 10) || 0) || 1280;
+    const h = Math.max(240, parseInt($singleVpH.value, 10) || 0) || 800;
+    return { viewportW: w, viewportH: h, label: `${w}px` };
+  }
+
+  // Parse a width hint out of filenames produced by the capture extension,
+  // e.g. "example.com_375w_2026-...html" → 375. Returns 0 if no match.
+  function parseWidthFromFilename(name) {
+    if (!name) return 0;
+    const m = name.match(/_(\d{3,4})w(?:_|\.)/i) || name.match(/(\d{3,4})w/i);
+    return m ? parseInt(m[1], 10) : 0;
+  }
+
+  // Try to parse `text` as a multicapture envelope. Returns the envelope on
+  // success, null on miss. The `filenameHint` is only used to skip the JSON
+  // parse path entirely for clearly-HTML files (saves ~ms on big pages).
+  function tryParseEnvelope(text, filenameHint) {
+    if (!text) return null;
+    const t = text.trimStart();
+    if (!t.startsWith('{')) return null;
+    if (filenameHint && /\.(html?|htm)$/i.test(filenameHint)) return null;
+    try {
+      const env = JSON.parse(t);
+      if (env && env.format && String(env.format).startsWith('figma-html-importer/multicapture')
+          && Array.isArray(env.captures) && env.captures.length) {
+        return env;
+      }
+    } catch { /* not JSON */ }
+    return null;
+  }
+
+  function readFileAsText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(new Error('Could not read file'));
+      reader.readAsText(file);
+    });
+  }
+
+  async function loadFiles(files) {
+    if (!files || !files.length) return;
+    try {
+      if (files.length === 1) {
+        const f = files[0];
+        const text = await readFileAsText(f);
+        const env = tryParseEnvelope(text, f.name);
+        if (env) {
+          enterMulticaptureMode(env, f.name);
+          return;
+        }
+        // Single raw HTML: drop into the textarea in single-viewport mode.
+        // Use the filename's width hint if present, else keep current viewport.
+        exitMulticaptureMode();
+        $html.value = text;
+        const w = parseWidthFromFilename(f.name);
+        if (w) $singleVpW.value = String(w);
+        setStatus(`Loaded ${f.name} (${Math.round(f.size / 1024)} KB)`);
+        maybeSuggestViewport();
+        return;
+      }
+
+      // Multi-file drop: treat as a multi-breakpoint .html bundle. Each file's
+      // width is parsed from its filename; height defaults to the existing
+      // single-viewport height. This mirrors what .fhtml carries natively.
+      const texts = await Promise.all([...files].map((f) => readFileAsText(f).then((t) => ({ name: f.name, text: t }))));
+      // If any file is a fhtml envelope, use the first one and ignore the rest
+      // (mixing envelopes + raw html in one drop is ambiguous — pick the
+      // envelope, it has more fidelity).
+      const firstEnv = texts.map((t) => tryParseEnvelope(t.text, t.name)).find(Boolean);
+      if (firstEnv) {
+        enterMulticaptureMode(firstEnv, `${texts.length} files`);
+        return;
+      }
+      const captures = [];
+      const defaultH = Math.max(240, parseInt($singleVpH.value, 10) || 800);
+      texts.forEach((t, i) => {
+        const w = parseWidthFromFilename(t.name) || (1280 + i);
+        captures.push({
+          label: parseWidthFromFilename(t.name) ? `${w}px` : t.name.replace(/\.html?$/i, ''),
+          width: w,
+          height: defaultH,
+          html: t.text,
+        });
+      });
+      if (!captures.length) return;
+      const synthetic = {
+        format: 'figma-html-importer/multicapture@1',
+        url: '',
+        title: '',
+        capturedAt: Date.now(),
+        captures: captures.sort((a, b) => a.width - b.width),
+      };
+      enterMulticaptureMode(synthetic, `${captures.length} .html files`);
+    } catch (err) {
+      setStatus(err && err.message ? err.message : 'Could not read file', 'error');
+    }
+  }
+
+  // Back-compat wrapper for callers that still pass a single File.
+  function loadFile(file) { return loadFiles(file ? [file] : []); }
+
+  function enterMulticaptureMode(env, filename) {
+    multicapture = env;
+    const list = env.captures.map(c => `${c.label || c.width + 'px'} ${c.width}×${c.height}`).join(' · ');
+    const host = (env.url || '').replace(/^https?:\/\//, '').split('/')[0] || 'capture';
+    const heading = env.url
+      ? 'Multi-capture bundle loaded'
+      : `Loaded ${env.captures.length} HTML file${env.captures.length === 1 ? '' : 's'}`;
+    $mcBanner.style.display = 'block';
+    $mcBanner.innerHTML =
+      `<b>${escapeHtml(heading)}</b><br>` +
+      (host && env.url ? `<span style="opacity:.8;">${escapeHtml(host)} — ${env.captures.length} breakpoints</span><br>` : '') +
+      `<span style="opacity:.8;">${escapeHtml(list)}</span>`;
+    // Hide the textarea + viewport config — they don't apply in this mode.
+    $html.style.display = 'none';
+    $bpSection.style.display = 'none';
+    $singleVpRow.style.display = 'none';
+    $vpHintRow.style.display = 'none';
+    setStatus(`Loaded ${filename} — ${env.captures.length} breakpoint${env.captures.length === 1 ? '' : 's'} ready to import`, 'success');
+  }
+
+  function exitMulticaptureMode() {
+    if (!multicapture) return;
+    multicapture = null;
+    $mcBanner.style.display = 'none';
+    $html.style.display = '';
+    $bpSection.style.display = 'none';
+    $singleVpRow.style.display = 'flex';
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  // Frameworks like Radix UI bake hardcoded pixel positions into popover/menu
+  // markup based on the viewport active at save time. SingleFile preserves
+  // those hints (--radix-popper-available-{width,height}) — surface them so
+  // the user can match the original viewport in the Desktop row.
+  const $vpHintRow = document.getElementById('vp-hint-row');
+  const $vpHint    = document.getElementById('vp-hint');
+  const $vpApply   = document.getElementById('vp-apply');
+  let suggestedW = 0, suggestedH = 0;
+
+  function maybeSuggestViewport() {
+    const html = $html.value;
+    suggestedW = 0; suggestedH = 0;
+
+    const widthHints = [...html.matchAll(/--radix-popper-available-width\s*:\s*(\d+)px/g)];
+    if (widthHints.length) {
+      suggestedW = Math.max(...widthHints.map(m => parseInt(m[1], 10)));
+    }
+    const heightHints = [...html.matchAll(/--radix-popper-available-height\s*:\s*(\d+)px/g)];
+    if (heightHints.length) {
+      const h = Math.max(...heightHints.map(m => parseInt(m[1], 10)));
+      suggestedH = h + 60;
+    }
+
+    const curW = parseInt($singleVpW.value, 10) || 0;
+    const curH = parseInt($singleVpH.value, 10) || 0;
+    if (suggestedW && (suggestedW > curW + 50 || suggestedH > curH + 50)) {
+      const target = `${suggestedW}${suggestedH ? ` × ${suggestedH}` : ''}`;
+      $vpHint.textContent = `Detected original viewport: ${target}px — apply?`;
+      $vpHintRow.style.display = 'flex';
+    } else {
+      $vpHintRow.style.display = 'none';
+    }
+  }
+  $vpApply.addEventListener('click', () => {
+    if (suggestedW) $singleVpW.value = String(suggestedW);
+    if (suggestedH) $singleVpH.value = String(suggestedH);
+    $vpHintRow.style.display = 'none';
+  });
+  // Detect when the user pastes a multicapture envelope directly into the
+  // textarea (e.g. they copied it to clipboard from the capture extension).
+  // We listen on 'paste' for the fast path and on 'input' as a backup for
+  // programmatic value changes / drops onto the textarea.
+  function maybeAdoptEnvelopeFromText() {
+    const text = $html.value;
+    if (!text || text.length > 25 * 1024 * 1024) { maybeSuggestViewport(); return; }
+    const env = tryParseEnvelope(text, '');
+    if (env) {
+      enterMulticaptureMode(env, 'pasted bundle');
+      $html.value = ''; // clear the giant JSON blob from the textarea
+      return;
+    }
+    maybeSuggestViewport();
+  }
+  $html.addEventListener('paste', () => { setTimeout(maybeAdoptEnvelopeFromText, 0); });
+  $html.addEventListener('input', maybeAdoptEnvelopeFromText);
+
+  $choose.addEventListener('click', () => $file.click());
+  $file.addEventListener('change', () => {
+    const files = $file.files ? [...$file.files] : [];
+    loadFiles(files);
+    $file.value = '';
+  });
+
+  // Drag-and-drop: textarea highlights when hovered; body catches drops anywhere
+  // (so .fhtml drops still work when multicapture mode has hidden the textarea).
+  // preventDefault on dragover is required for the drop event to fire at all.
+  $html.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    $html.classList.add('dragover');
+  });
+  $html.addEventListener('dragleave', () => $html.classList.remove('dragover'));
+  document.body.addEventListener('dragover', (e) => { e.preventDefault(); });
+  document.body.addEventListener('drop', (e) => {
+    e.preventDefault();
+    $html.classList.remove('dragover');
+    const files = e.dataTransfer && e.dataTransfer.files ? [...e.dataTransfer.files] : [];
+    if (files.length) loadFiles(files);
+  });
+
+  function setStatus(text, kind) {
+    $status.textContent = text;
+    $status.className = 'status' + (kind ? ' ' + kind : '');
+  }
+
+  $import.addEventListener('click', async () => {
+    // Build the work list:
+    //   - Multicapture mode: each entry uses its own HTML + width (real captures
+    //     from different breakpoints in the browser).
+    //   - Single-source mode: same HTML, looped over the enabled breakpoint rows.
+    let jobs;
+    if (multicapture) {
+      jobs = multicapture.captures.map((c) => ({
+        html: c.html,
+        viewportW: c.width,
+        viewportH: c.height,
+        label: c.label || `${c.width}px`,
+      }));
+    } else {
+      const html = $html.value;
+      if (!html.trim()) { setStatus('Paste HTML first', 'error'); return; }
+      const vp = readSingleViewport();
+      jobs = [{ html, viewportW: vp.viewportW, viewportH: vp.viewportH, label: vp.label }];
+    }
+
+    $import.disabled = true;
+    try {
+      if (!window.__captureHtml) throw new Error('Capture runtime missing — rebuild the plugin');
+      const envelopes = [];
+      for (let i = 0; i < jobs.length; i++) {
+        const j = jobs[i];
+        setStatus(`Capturing ${j.label || j.viewportW + 'px'} (${i + 1}/${jobs.length})…`);
+        const env = await window.__captureHtml({
+          html: j.html,
+          viewportW: j.viewportW,
+          viewportH: j.viewportH,
+          breakpointLabel: j.label,
+        });
+        envelopes.push(env);
+      }
+      setStatus('Importing into Figma…');
+      const autoLayout = document.getElementById('autolayout').checked;
+      const fallbackFamily = ($fallback.value || 'Inter').trim();
+      parent.postMessage({ pluginMessage: { type: 'import', envelopes, fallbackFamily, autoLayout } }, '*');
+    } catch (err) {
+      setStatus(err && err.message ? err.message : String(err), 'error');
+      $import.disabled = false;
+    }
+  });
+
+  $clear.addEventListener('click', () => {
+    $html.value = '';
+    exitMulticaptureMode();
+    setStatus('');
+  });
+
+  window.addEventListener('message', (e) => {
+    const msg = e.data.pluginMessage;
+    if (!msg) return;
+    if (msg.type === 'done') { setStatus('Imported ' + msg.nodes + ' nodes in ' + msg.ms + 'ms', 'success'); $import.disabled = false; }
+    else if (msg.type === 'error') { setStatus(msg.message, 'error'); $import.disabled = false; }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+HTML → Figma Importer — Quick Install (no terminal needed)
+===========================================================
+
+You install two things: a Figma plugin and a Chrome extension.
+Everything is pre-built — you do NOT need Node, npm, or a terminal.
+
+------------------------------------------------------------
+1) FIGMA PLUGIN  (requires the Figma DESKTOP app, not the web version)
+------------------------------------------------------------
+1. Open the Figma desktop app and open any design file.
+2. Top menu → Plugins → Development → "Import plugin from manifest…"
+3. Select the file:  plugin/manifest.json  (inside this folder)
+4. It now lives under Plugins → Development → "HTML Importer (Local)".
+
+------------------------------------------------------------
+2) CHROME EXTENSION  (for capturing pages)
+------------------------------------------------------------
+1. Go to  chrome://extensions  in Chrome.
+2. Turn on "Developer mode" (top-right toggle).
+3. Click "Load unpacked".
+4. Select the  extension/  folder (inside this folder).
+
+------------------------------------------------------------
+HOW TO USE IT
+------------------------------------------------------------
+1. Open a page in Chrome, click the extension icon, pick your
+   breakpoints, click Capture. You get a .fhtml file (or it copies
+   to your clipboard).
+2. In Figma, run the "HTML Importer (Local)" plugin. Drop the .fhtml
+   file in, or paste the clipboard, and click Import.
+
+Full details and limitations are in README.md.

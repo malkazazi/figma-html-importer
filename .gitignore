@@ -1,0 +1,12 @@
+node_modules/
+capture/dist/
+plugin/dist/
+.DS_Store
+*.log
+
+# Local test/sample captures (may contain internal app content — keep out of the public repo)
+Tests/
+sample/
+
+# Release artifacts (published to GitHub Releases, not committed)
+*.zip
