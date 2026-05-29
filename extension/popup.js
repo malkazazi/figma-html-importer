@@ -27,7 +27,7 @@ const PRESETS = [
 
 // Fixed page-settle time (ms) before serializing each breakpoint. Previously
 // user-configurable; now hidden and pinned at a sensible default.
-const SETTLE_MS = 400;
+const SETTLE_MS = 100;
 
 // Bumped when the persisted config shape changes — v4 drops `settle`, replaces
 // the `pick` boolean with a `mode` string.

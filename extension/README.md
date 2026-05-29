@@ -95,7 +95,7 @@ fully reproduce the page.
   mirrors the Figma plugin's own image cap.
 - **chrome://, about://, and extension pages** cannot be captured — Chrome
   forbids debugger attach on those URLs.
-- **Settle time is fixed at 0.4s** per breakpoint (the wait after resizing
+- **Settle time is fixed at 0.1s** per breakpoint (the wait after resizing
   before serializing; a scroll pass + a 400 ms final wait happen on top). It's
   no longer adjustable in the UI; very slow pages may need the value raised in
   `popup.js` (`SETTLE_MS`).
