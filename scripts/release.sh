@@ -17,7 +17,7 @@ npm run build
 
 STAGE="$(mktemp -d)/figma-html-importer"
 # Stable filename (no version) so releases/latest/download/<name> is a permanent
-# link — the in-folder update.sh relies on this.
+# link — the in-folder update.command relies on this.
 ZIP="$ROOT/figma-html-importer.zip"
 mkdir -p "$STAGE/plugin"
 
@@ -41,5 +41,5 @@ echo ""
 echo "✓ Released ${VERSION}"
 echo "  First-time download link to share:"
 echo "    https://github.com/malkazazi/figma-html-importer/releases/latest"
-echo "  Permanent direct-zip link (used by update.sh):"
+echo "  Permanent direct-zip link (used by update.command):"
 echo "    https://github.com/malkazazi/figma-html-importer/releases/latest/download/figma-html-importer.zip"
