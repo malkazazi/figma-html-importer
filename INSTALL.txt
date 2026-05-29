@@ -30,16 +30,22 @@ HOW TO USE IT
    file in, or paste the clipboard, and click Import.
 
 ------------------------------------------------------------
-GETTING UPDATES  (one command — no re-downloading by hand)
+GETTING UPDATES  (update in place — no re-downloading by hand)
 ------------------------------------------------------------
 When a new version ships, update this folder in place:
 
-  • Double-click  update.command  in this folder.
+  ┌─ macOS ──────────────────────────────────────────────┐
+  │ • Double-click  update.command  in this folder.       │
+  │ • First time only: if macOS says it "cannot verify    │
+  │   the developer," right-click update.command →        │
+  │   "Open" → "Open" once. (Terminal: bash update.command)│
+  └───────────────────────────────────────────────────────┘
 
-  • First time only: macOS may say it "cannot verify the developer."
-    If so, right-click (or Control-click) update.command → "Open" →
-    "Open" once. After that, plain double-click works every time.
-    (Prefer the terminal? You can also run:  bash update.command )
+  ┌─ Windows ────────────────────────────────────────────┐
+  │ • Double-click  update-windows.bat  in this folder.   │
+  │ • If SmartScreen warns, click "More info" →           │
+  │   "Run anyway".                                        │
+  └───────────────────────────────────────────────────────┘
 
 It downloads the latest version and overwrites these files for you.
 Then just refresh both apps:

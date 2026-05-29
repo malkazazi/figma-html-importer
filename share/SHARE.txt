@@ -24,9 +24,13 @@ No page to navigate, no risk of grabbing the wrong file:
 
 
 ────────────────────────────────────────────────────────────────────
-3) TERMINAL — one command (macOS) that downloads, unzips, opens it
+3) TERMINAL — one command that downloads, unzips, opens it
 ────────────────────────────────────────────────────────────────────
+  --- macOS (Terminal) ---
   curl -L -o ~/Downloads/figma-html-importer.zip https://github.com/malkazazi/figma-html-importer/releases/latest/download/figma-html-importer.zip && unzip -o ~/Downloads/figma-html-importer.zip -d ~/Downloads && open ~/Downloads/figma-html-importer
+
+  --- Windows (PowerShell) ---
+  powershell -Command "iwr 'https://github.com/malkazazi/figma-html-importer/releases/latest/download/figma-html-importer.zip' -OutFile \"$env:USERPROFILE\Downloads\figma-html-importer.zip\"; Expand-Archive \"$env:USERPROFILE\Downloads\figma-html-importer.zip\" \"$env:USERPROFILE\Downloads\" -Force; explorer \"$env:USERPROFILE\Downloads\figma-html-importer\""
 
 
 ────────────────────────────────────────────────────────────────────
@@ -43,8 +47,9 @@ Hey — here's the HTML→Figma importer.
 3. Open INSTALL.txt inside and follow the steps — two short parts, one for
    Figma (needs the DESKTOP app, not the browser) and one for Chrome.
 
-To update later: double-click "update.command" in that folder, then reload the
-extension in chrome://extensions and re-run the plugin in Figma.
+To update later: double-click "update.command" (Mac) or "update-windows.bat"
+(Windows) in that folder, then reload the extension in chrome://extensions and
+re-run the plugin in Figma.
 
 
 ────────────────────────────────────────────────────────────────────

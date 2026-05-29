@@ -26,7 +26,7 @@ mkdir -p "$STAGE/plugin"
 cp -R plugin/dist "$STAGE/plugin/dist"
 cp plugin/manifest.json "$STAGE/plugin/manifest.json"
 cp -R extension "$STAGE/extension"
-cp README.md INSTALL.txt update.command "$STAGE/"
+cp README.md INSTALL.txt update.command update-windows.bat update-windows.ps1 "$STAGE/"
 chmod +x "$STAGE/update.command"
 find "$STAGE" -name '.DS_Store' -delete
 
