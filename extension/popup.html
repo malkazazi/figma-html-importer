@@ -17,7 +17,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 4px;
+    margin-bottom: 12px;
   }
   .brand img {
     width: 24px;
@@ -26,11 +26,35 @@
     flex: 0 0 auto;
   }
   h1 { font-size: 13px; font-weight: 600; margin: 0; }
-  .hint {
-    font-size: 11px;
-    color: #888;
-    margin-bottom: 12px;
+
+  /* Step indicator */
+  .steps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #bbb;
   }
+  .steps .step { display: flex; align-items: center; gap: 6px; }
+  .steps .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px; height: 17px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #888;
+    font-size: 10px;
+  }
+  .steps .step.active { color: #111; }
+  .steps .step.active .num { background: #18a0fb; color: #fff; }
+  .steps .step.done .num { background: #cfe9fb; color: #0d6fb8; }
+  .steps .sep { flex: 0 0 18px; height: 1px; background: #e5e7eb; }
+
   label {
     font-size: 10px;
     color: #555;
@@ -38,7 +62,7 @@
     text-transform: uppercase;
     letter-spacing: .04em;
   }
-  .bp-section { margin-bottom: 10px; }
+  .bp-section { margin-bottom: 12px; }
   .bp-section > label { display: block; margin-bottom: 6px; }
   .bp-grid {
     display: grid;
@@ -66,8 +90,11 @@
   .bp-grid .x { color: #888; font-size: 11px; text-align: center; }
   .bp-grid input[type=checkbox] { margin: 0; accent-color: #18a0fb; }
 
-  .row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-  .row label { min-width: 70px; }
+  .row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .row > label:first-child { min-width: 70px; }
+  .field { margin-bottom: 12px; }
+  .field > label { display: block; margin-bottom: 6px; }
+  .options { display: flex; flex-direction: column; gap: 7px; }
   select {
     font: 12px system-ui;
     padding: 4px 8px;
@@ -77,14 +104,6 @@
     outline: none;
   }
   select:focus { border-color: #18a0fb; }
-  input[type=number].settle {
-    font: 12px system-ui;
-    width: 70px;
-    padding: 4px 6px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    outline: none;
-  }
 
   label.radio, label.checkbox {
     font: 12px/1 -apple-system, system-ui, sans-serif;
@@ -94,11 +113,12 @@
     color: #222;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     min-width: 0;
     cursor: pointer;
   }
   label.radio input, label.checkbox input { accent-color: #18a0fb; margin: 0; }
+  .rec { color: #067647; font-weight: 600; }
 
   .pick-hint {
     font-size: 10.5px;
@@ -106,7 +126,7 @@
     background: #f6f7f9;
     border-left: 3px solid #18a0fb;
     padding: 6px 8px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     line-height: 1.45;
   }
   .bp-section.disabled { opacity: .45; pointer-events: none; }
@@ -123,6 +143,10 @@
   }
   button:hover { background: #0d8fe0; }
   button:disabled { background: #aaa; cursor: default; }
+  button.secondary { background: #f1f2f4; color: #333; }
+  button.secondary:hover { background: #e6e7ea; }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-row button.secondary { width: 38%; }
 
   .status {
     font-size: 11px;
@@ -155,49 +179,69 @@
     <img src="icons/icon-48.png" alt="">
     <h1>Capture for Figma</h1>
   </div>
-  <div class="hint">Captures the active tab at each enabled breakpoint by actually resizing the browser. Login state and JS-rendered responsive markup are preserved.</div>
 
-  <div class="bp-section">
-    <label>Breakpoints</label>
-    <div class="bp-grid" id="bp-grid"></div>
+  <div class="steps">
+    <span class="step active" id="step-ind-1"><span class="num">1</span> Breakpoints</span>
+    <span class="sep"></span>
+    <span class="step" id="step-ind-2"><span class="num">2</span> Options</span>
   </div>
 
-  <div class="row">
-    <label>Theme</label>
-    <select id="theme">
-      <option value="">(page default)</option>
-      <option value="light">light</option>
-      <option value="dark">dark</option>
-    </select>
-  </div>
+  <!-- ───────────── STEP 1: what to capture ───────────── -->
+  <section class="panel" id="panel-1">
+    <div class="field">
+      <label>What to capture</label>
+      <div class="options">
+        <label class="radio"><input type="radio" name="mode" value="full" checked> Entire page</label>
+        <label class="radio"><input type="radio" name="mode" value="pick"> Select an element</label>
+      </div>
+    </div>
 
-  <div class="row">
-    <label>Settle (s)</label>
-    <input type="number" id="settle" class="settle" value="2" min="0" max="20" step="0.5">
-  </div>
+    <div class="bp-section">
+      <label>Breakpoints</label>
+      <div class="bp-grid" id="bp-grid"></div>
+    </div>
 
-  <div class="row">
-    <label>Output</label>
-    <label class="radio"><input type="radio" name="output" value="download" checked> Download file</label>
-    <label class="radio"><input type="radio" name="output" value="clipboard"> Copy to clipboard</label>
-  </div>
+    <div id="pick-hint" class="pick-hint" style="display:none;">
+      You'll click an element on the page to capture it. Breakpoints are
+      ignored — only the current viewport is captured.
+    </div>
 
-  <div class="row">
-    <label>Format</label>
-    <label class="radio"><input type="radio" name="format" value="fhtml" checked> .fhtml (bundle)</label>
-    <label class="radio"><input type="radio" name="format" value="html"> .html (raw)</label>
-  </div>
+    <button id="next">Next →</button>
+  </section>
 
-  <div class="row">
-    <label>Mode</label>
-    <label class="checkbox"><input type="checkbox" id="pick"> Pick element manually</label>
-  </div>
-  <div id="pick-hint" class="pick-hint" style="display:none;">
-    Click an element on the page after capturing. Breakpoints are ignored — only
-    the current viewport is captured.
-  </div>
+  <!-- ───────────── STEP 2: output options ───────────── -->
+  <section class="panel" id="panel-2" style="display:none;">
+    <div class="row">
+      <label>Theme</label>
+      <select id="theme">
+        <option value="">(page default)</option>
+        <option value="light">light</option>
+        <option value="dark">dark</option>
+      </select>
+    </div>
 
-  <button id="capture">Capture</button>
+    <div class="field">
+      <label>Output</label>
+      <div class="options">
+        <label class="radio"><input type="radio" name="output" value="clipboard" checked> Copy to clipboard <span class="rec">(recommended)</span></label>
+        <label class="radio"><input type="radio" name="output" value="download"> Download file</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Format</label>
+      <div class="options">
+        <label class="radio"><input type="radio" name="format" value="fhtml" checked> .fhtml (bundle) <span class="rec">(recommended)</span></label>
+        <label class="radio"><input type="radio" name="format" value="html"> .html (raw)</label>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button id="back" class="secondary">← Back</button>
+      <button id="capture">Capture</button>
+    </div>
+  </section>
+
   <div class="status" id="status"></div>
 
   <div class="footer">

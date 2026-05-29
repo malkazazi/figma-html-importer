@@ -24,32 +24,36 @@ click the refresh icon on the extension card.
 
 ## Use
 
+The popup is a two-step wizard:
+- **Step 1 — Breakpoints:** choose **Entire page** or **Select an element**, and
+  edit the breakpoint list.
+- **Step 2 — Options:** theme, **Output** (Copy to clipboard — recommended — or
+  Download file), and **Format** (`.fhtml` bundle — recommended — or raw `.html`).
+
 ### Whole-page multi-breakpoint capture
 
 1. Open the page you want to capture (logged-in pages work — the extension uses
    the active tab's session).
-2. Click the extension icon. Adjust the breakpoint list / theme if needed.
-3. Choose an **Output**:
-   - **Download file** — saves a `.fhtml` to your Downloads folder.
-   - **Copy to clipboard** — copies the bundle so you can paste it straight
-     into the Figma plugin's textarea.
-4. Click **Capture**. Chrome shows a yellow "is being debugged" banner at the
-   top of the tab while it runs; this is normal and goes away when finished.
-5. In Figma: drop the `.fhtml` into the plugin window, **or** paste the
+2. Click the extension icon. Leave **Entire page** selected and adjust the
+   breakpoint list if needed, then click **Next →**.
+3. On step 2, pick your theme / output / format and click **Capture**. Chrome
+   shows a yellow "is being debugged" banner at the top of the tab while it
+   runs; this is normal and goes away when finished.
+4. In Figma: drop the `.fhtml` into the plugin window, **or** paste the
    clipboard contents into the textarea. Either way, the plugin auto-detects
    the bundle and switches to multi-breakpoint import.
 
-### Pick element manually
+### Pick a single element
 
 When you only want one component (e.g. a button, a card, a navbar) instead of
 the whole page:
 
-1. Tick **Pick element manually** in the popup. The breakpoint list greys out —
-   pick mode captures only the current viewport.
-2. Click **Capture** (button label changes to **Pick element…**).
-3. The popup closes; a hover overlay appears on the page. Move the mouse to
-   highlight the element you want. **Click** to capture, or press **Esc** to
-   cancel.
+1. On step 1, choose **Select an element**. The breakpoint list greys out —
+   this mode captures only the current viewport. Click **Next →**.
+2. Set your options on step 2, then click **Pick element…**.
+3. The popup closes and a hover overlay appears on the page. Move the mouse to
+   highlight the element you want. **A single click captures it** instantly, or
+   press **Esc** to cancel.
 4. The extension serializes only that element's subtree (with full inlined
    CSS / fonts) and delivers it via the same Output mode (download or
    clipboard). A desktop notification confirms success.
@@ -88,8 +92,9 @@ fully reproduce the page.
   mirrors the Figma plugin's own image cap.
 - **chrome://, about://, and extension pages** cannot be captured — Chrome
   forbids debugger attach on those URLs.
-- **Settle time is heuristic** (default 2s). If a page's JS is slow to react to
-  the viewport change, bump the value in the popup.
+- **Settle time is fixed at 1s** per breakpoint (the wait after resizing before
+  serializing). It's no longer adjustable in the UI; very slow pages may need
+  the value raised in `popup.js` (`SETTLE_MS`).
 - If **DevTools is already attached** to the tab (you have F12 open),
   `chrome.debugger.attach` fails. Close DevTools first.
 

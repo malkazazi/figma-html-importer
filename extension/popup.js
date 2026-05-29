@@ -1,12 +1,18 @@
 // Popup UI for the multi-breakpoint capture extension.
 //
-// Two top-level modes:
-//   - Multi-breakpoint (default): full-page capture at each enabled width via
+// Two-step wizard:
+//   Step 1 — what to capture: pick "Entire page" (multi-breakpoint) or
+//            "Select an element", and edit the breakpoint list.
+//   Step 2 — output options: theme, clipboard vs download, .fhtml vs .html.
+//
+// Two capture modes (chosen in step 1):
+//   - Entire page (default): full-page capture at each enabled width via
 //     chrome.debugger viewport emulation. Popup stays open and shows progress.
-//   - Picker: user clicks one element in the page; only that element + its
-//     inlined styles is captured at the current viewport. The popup closes as
-//     soon as the user clicks the page, so the background worker takes over
-//     and surfaces completion via a desktop notification.
+//   - Select an element: user clicks one element in the page; only that element
+//     + its inlined styles is captured at the current viewport. The popup
+//     closes the instant the picker activates, so the user's first click on the
+//     page lands on the element (not on dismissing the popup), and the
+//     background worker surfaces completion via an in-page toast.
 
 // Presets are captured in the order listed below — largest viewport first, so
 // any JS-driven responsive markup settles on the desktop layout before we
@@ -19,18 +25,26 @@ const PRESETS = [
   { label: 'Mobile',  w: 375,  h: 812,  on: true },
 ];
 
-// Bumped when the default preset order changes — old saved configs would
-// otherwise pin users to the previous order forever.
-const STORAGE_KEY = 'capture-config-v3';
+// Fixed page-settle time (ms) before serializing each breakpoint. Previously
+// user-configurable; now hidden and pinned at a sensible default.
+const SETTLE_MS = 1000;
 
-const $grid    = document.getElementById('bp-grid');
-const $theme   = document.getElementById('theme');
-const $settle  = document.getElementById('settle');
-const $pick    = document.getElementById('pick');
-const $pickHint= document.getElementById('pick-hint');
-const $capture = document.getElementById('capture');
-const $status  = document.getElementById('status');
-const $bpSection = document.querySelector('.bp-section');
+// Bumped when the persisted config shape changes — v4 drops `settle`, replaces
+// the `pick` boolean with a `mode` string.
+const STORAGE_KEY = 'capture-config-v4';
+
+const $grid     = document.getElementById('bp-grid');
+const $theme    = document.getElementById('theme');
+const $pickHint = document.getElementById('pick-hint');
+const $capture  = document.getElementById('capture');
+const $next     = document.getElementById('next');
+const $back     = document.getElementById('back');
+const $status   = document.getElementById('status');
+const $bpSection= document.querySelector('.bp-section');
+const $panel1   = document.getElementById('panel-1');
+const $panel2   = document.getElementById('panel-2');
+const $ind1     = document.getElementById('step-ind-1');
+const $ind2     = document.getElementById('step-ind-2');
 
 /** @type {Array<{ on: HTMLInputElement, label: HTMLInputElement, w: HTMLInputElement, h: HTMLInputElement }>} */
 const rowEls = [];
@@ -70,9 +84,19 @@ function buildGrid(presets) {
   });
 }
 
+function getMode() {
+  const checked = document.querySelector('input[name="mode"]:checked');
+  return checked ? checked.value : 'full';
+}
+
+function setMode(value) {
+  const target = document.querySelector(`input[name="mode"][value="${value}"]`);
+  if (target) target.checked = true;
+}
+
 function getOutputMode() {
   const checked = document.querySelector('input[name="output"]:checked');
-  return checked ? checked.value : 'download';
+  return checked ? checked.value : 'clipboard';
 }
 
 function setOutputMode(value) {
@@ -99,10 +123,9 @@ function readConfig() {
       h: Math.max(240, parseInt(r.h.value, 10) || 0),
     })),
     theme: $theme.value,
-    settle: Math.max(0, parseFloat($settle.value) || 0),
     output: getOutputMode(),
     format: getFormat(),
-    pick: $pick.checked,
+    mode: getMode(),
   };
 }
 
@@ -117,10 +140,9 @@ async function restore() {
     if (saved && Array.isArray(saved.breakpoints) && saved.breakpoints.length) {
       buildGrid(saved.breakpoints);
       if (typeof saved.theme === 'string') $theme.value = saved.theme;
-      if (typeof saved.settle === 'number') $settle.value = String(saved.settle);
       if (typeof saved.output === 'string') setOutputMode(saved.output);
       if (typeof saved.format === 'string') setFormat(saved.format);
-      if (typeof saved.pick === 'boolean') $pick.checked = saved.pick;
+      if (typeof saved.mode === 'string') setMode(saved.mode);
       syncPickMode();
       return;
     }
@@ -134,24 +156,47 @@ function setStatus(text, kind) {
   $status.className = 'status' + (kind ? ' ' + kind : '');
 }
 
-// Picker mode invalidates the breakpoint grid (single-viewport capture only).
-// Grey it out so the user understands the breakpoints won't apply.
+// "Select an element" mode invalidates the breakpoint grid (single-viewport
+// capture only). Grey it out so the user understands it won't apply, and
+// relabel the action button.
 function syncPickMode() {
-  const on = $pick.checked;
-  $pickHint.style.display = on ? 'block' : 'none';
-  $bpSection.classList.toggle('disabled', on);
-  $capture.textContent = on ? 'Pick element…' : 'Capture';
+  const pick = getMode() === 'pick';
+  $pickHint.style.display = pick ? 'block' : 'none';
+  $bpSection.classList.toggle('disabled', pick);
+  $capture.textContent = pick ? 'Pick element…' : 'Capture';
 }
 
-$pick.addEventListener('change', () => { syncPickMode(); persist(); });
+// ---------- step navigation ----------
+
+function showStep(n) {
+  const oneActive = n === 1;
+  $panel1.style.display = oneActive ? 'block' : 'none';
+  $panel2.style.display = oneActive ? 'none' : 'block';
+  $ind1.className = 'step ' + (oneActive ? 'active' : 'done');
+  $ind2.className = 'step ' + (oneActive ? '' : 'active');
+  setStatus('');
+}
+
+$next.addEventListener('click', () => {
+  // Validate step 1 before advancing: full-page mode needs ≥1 breakpoint.
+  if (getMode() === 'full') {
+    const anyOn = rowEls.some((r) => r.on.checked);
+    if (!anyOn) { setStatus('Enable at least one breakpoint', 'error'); return; }
+  }
+  showStep(2);
+});
+
+$back.addEventListener('click', () => showStep(1));
+
+document.querySelectorAll('input[name="mode"]').forEach((r) =>
+  r.addEventListener('change', () => { syncPickMode(); persist(); }));
 $theme.addEventListener('change', persist);
-$settle.addEventListener('input', persist);
 document.querySelectorAll('input[name="output"]').forEach((r) => r.addEventListener('change', persist));
 document.querySelectorAll('input[name="format"]').forEach((r) => r.addEventListener('change', persist));
 
-// The background worker streams progress updates while a multi-breakpoint
-// capture is running. Picker mode closes the popup before completion, so it
-// uses chrome.notifications instead — those updates won't show up here.
+// The background worker streams progress updates while a full-page capture is
+// running. Pick mode closes the popup before completion, so it uses an in-page
+// toast instead — those updates won't show up here.
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg && msg.type === 'capture-progress') {
     setStatus(msg.text || '');
@@ -161,14 +206,15 @@ chrome.runtime.onMessage.addListener((msg) => {
 $capture.addEventListener('click', async () => {
   const cfg = readConfig();
   const enabled = cfg.breakpoints.filter((b) => b.on);
+  const pick = cfg.mode === 'pick';
 
-  if (!cfg.pick && !enabled.length) {
+  if (!pick && !enabled.length) {
     setStatus('Enable at least one breakpoint', 'error');
     return;
   }
 
   $capture.disabled = true;
-  setStatus(cfg.pick ? 'Activating picker…' : 'Starting…');
+  setStatus(pick ? 'Activating picker…' : 'Starting…');
 
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -178,21 +224,24 @@ $capture.addEventListener('click', async () => {
     }
 
     const payload = {
-      type: cfg.pick ? 'start-pick' : 'start-capture',
+      type: pick ? 'start-pick' : 'start-capture',
       tabId: tab.id,
       breakpoints: enabled.map(({ label, w, h }) => ({ label, width: w, height: h })),
       theme: cfg.theme,
-      settleMs: Math.round(cfg.settle * 1000),
+      settleMs: SETTLE_MS,
       output: cfg.output,
       format: cfg.format,
     };
 
-    if (cfg.pick) {
-      // Fire-and-forget: as soon as the user clicks on the page to pick an
-      // element, this popup closes. The background worker carries the result
-      // home via download / clipboard / notification.
-      chrome.runtime.sendMessage(payload).catch(() => {});
-      setStatus('Picker active — click an element on the page.\n(This popup will close.)');
+    if (pick) {
+      // Hand off to the background worker, then close the popup IMMEDIATELY.
+      // If the popup stays open, the user's first click on the page only
+      // dismisses the popup (Chrome swallows that click) and they'd have to
+      // click a second time to actually pick. Closing now means the very first
+      // click lands on the element. We await the send so the message is
+      // delivered before this context is torn down.
+      await chrome.runtime.sendMessage(payload).catch(() => {});
+      window.close();
       return;
     }
 
@@ -219,3 +268,4 @@ function formatBytes(n) {
 }
 
 restore();
+showStep(1);

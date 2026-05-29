@@ -29,12 +29,12 @@ You have two paths.
 
 1. Install the companion Chrome extension — see [`extension/README.md`](./extension/README.md).
 2. Open the page in Chrome (logged-in pages work).
-3. Click the extension icon, pick your breakpoints, choose **Download** or **Copy to clipboard** as the output, click **Capture**.
+3. Click the extension icon. Step 1: keep **Entire page** selected, pick your breakpoints, click **Next →**. Step 2: choose theme / output (Copy to clipboard is the default) / format, then click **Capture**.
 4. In Figma, run this plugin. Either drop the `.fhtml` into the plugin window, or paste the clipboard contents into the textarea — the plugin auto-detects the bundle either way. Click **Import** — you get one editable Figma frame per breakpoint, laid out side-by-side.
 
 This path captures the page **after** JS has rendered the right responsive markup at each viewport, so mobile nav vs. desktop nav, conditional hooks, etc. come through correctly.
 
-For capturing a **single component** (a button, a card, etc.) instead of the whole page, tick **Pick element manually** in the extension popup before clicking Capture — you'll get a hover overlay to click the exact element.
+For capturing a **single component** (a button, a card, etc.) instead of the whole page, choose **Select an element** on step 1 of the extension popup — you'll get a hover overlay, and a single click captures the exact element.
 
 ### B) Single-source HTML
 

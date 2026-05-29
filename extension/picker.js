@@ -87,12 +87,24 @@
     label.style.top  = top + 'px';
   }
 
-  function onClick(e) {
+  // Fire on mousedown (capture phase), not click: this selects on the first
+  // press, so a single interaction grabs the element instantly. We then swallow
+  // the trailing click/mouseup so the page doesn't act on it (follow a link,
+  // submit a form, etc.) now that the picker is gone.
+  function onDown(e) {
+    if (e.button !== 0) return; // left button only
     e.preventDefault();
     e.stopPropagation();
-    const el = lastTarget || e.target;
+    // elementFromPoint is authoritative even if the mouse never moved (our
+    // overlay/label/banner are pointer-events:none, so they're skipped).
+    const el = document.elementFromPoint(e.clientX, e.clientY) || lastTarget || e.target;
     const selector = buildSelector(el);
     cleanup();
+
+    const swallow = (ev) => { ev.preventDefault(); ev.stopPropagation(); };
+    document.addEventListener('click', swallow, { capture: true, once: true });
+    setTimeout(() => document.removeEventListener('click', swallow, true), 500);
+
     chrome.runtime.sendMessage({ type: 'pick-result', selector });
   }
 
@@ -109,7 +121,7 @@
     label.remove();
     banner.remove();
     document.removeEventListener('mousemove', onMove, true);
-    document.removeEventListener('click', onClick, true);
+    document.removeEventListener('mousedown', onDown, true);
     document.removeEventListener('keydown', onKey, true);
   }
 
@@ -133,6 +145,6 @@
   }
 
   document.addEventListener('mousemove', onMove, true);
-  document.addEventListener('click', onClick, true);
+  document.addEventListener('mousedown', onDown, true);
   document.addEventListener('keydown', onKey, true);
 })();
